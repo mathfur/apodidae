@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+require 'getoptlong'
+require './lib/apodidae'
+
+usage = <<EOS
+Usage: apodidae [options]
+    -w, --watch     compile automatically when template or source is changed.
+EOS
+
+opts = GetoptLong.new(
+  ['--help', '-h', GetoptLong::NO_ARGUMENT],
+  ['--version', '-v', GetoptLong::NO_ARGUMENT],
+  ['--watch', '-w', GetoptLong::NO_ARGUMENT]
+)
+
+opts.each do |opt, arg|
+  case opt
+  when '--help'; puts usage
+  when '--version'; puts Apodidae::VERSION
+  when '--watch'; puts 'before implementation.'
+  else; puts ">>>"
+  end
+end
