@@ -49,14 +49,42 @@ EOS
     end
   end
 
+  describe "with --output-dir" do
+    before do
+      @relative_fname = "app/views/words/edit.html.erb"
+    end
+
+    describe "when tmp/output is specified" do
+      it "output html to tmp/output/app/views/words/edit.html.erb" do
+        @output_dir = "#{BASE_DIR}/tmp/output"
+        @output_fname = "#{@output_dir}/#{@relative_fname}"
+        FileUtils.rm_rf(@output_dir)
+
+        execute_apodidae_command("--output-dir=#{@output_dir}")
+
+        File.read(@output_fname).should == <<EOS
+<%= form_for(@word) do |f| %>
+  <div class="field">
+    <%= f.label :name %><br />
+    <%= f.text_field :name %>
+  </div>
+  <div class="field">
+    <%= f.label :mail %><br />
+    <%= f.text_field :mail %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>
+EOS
+      end
+    end
+  end
+
   describe "without options" do
-    pending
-#    it "output usage" do
-#      execute_apodidae_command.should == <<EOS
-#Usage: apodidae [options]
-#    -w, --watch     compile automatically when template or source is changed.
-#EOS
-#    end
+    it "output html to current directory" do
+      pending
+    end
   end
 
   def execute_apodidae_command(*args)

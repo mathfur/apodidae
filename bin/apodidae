@@ -1,24 +1,37 @@
 #!/usr/bin/env ruby
 
 require 'getoptlong'
+require 'fileutils'
 require './lib/apodidae'
 
 usage = <<EOS
 Usage: apodidae [options]
     -w, --watch     compile automatically when template or source is changed.
 EOS
+output_dir = "#{File.dirname(__FILE__)}/.."
 
 opts = GetoptLong.new(
   ['--help', '-h', GetoptLong::NO_ARGUMENT],
   ['--version', '-v', GetoptLong::NO_ARGUMENT],
-  ['--watch', '-w', GetoptLong::NO_ARGUMENT]
+  ['--watch', '-w', GetoptLong::NO_ARGUMENT],
+  ['--output-dir', '-o', GetoptLong::OPTIONAL_ARGUMENT]
 )
 
-opts.each do |opt, arg|
-  case opt
-  when '--help'; puts usage
-  when '--version'; puts Apodidae::VERSION
-  when '--watch'; puts 'before implementation.'
-  else; puts ">>>"
+begin
+  opts.each do |opt, arg|
+    case opt
+    when '--help'; puts usage; exit
+    when '--version'; puts Apodidae::VERSION; exit
+    when '--watch'; puts 'before implementation.'; exit
+    when '--output-dir'
+      output_dir = arg
+    else
+    end
   end
+rescue
+  puts ">>Exception"
+  exit
 end
+
+manager = Apodidae::Manager.new
+manager.write_to(output_dir)
