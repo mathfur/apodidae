@@ -2,27 +2,21 @@
 
 module Apodidae
   class Manager
-    def write_to(output_dir)
-      output_fname = "#{output_dir}/app/views/words/edit.html.erb"
-      FileUtils.mkdir_p(File.dirname(output_fname))
-      raise "File #{output_fname} is alreasy exist." if File.exist?(output_fname)
+    def initialize
+      @barb = nil
+      @rachis = nil
+      @combine = Apodidae::Combine.new(@barb, @rachis)
+    end
 
-      open(output_fname, 'w') do |f|
-        f.write <<EOS
-<%= form_for(@word) do |f| %>
-  <div class="field">
-    <%= f.label :name %><br />
-    <%= f.text_field :name %>
-  </div>
-  <div class="field">
-    <%= f.label :mail %><br />
-    <%= f.text_field :mail %>
-  </div>
-  <div class="actions">
-    <%= f.submit %>
-  </div>
-<% end %>
-EOS
+    def write_to(output_dir)
+      @combine.each do |relative_fname, content|
+        output_fname = "#{output_dir}/#{relative_fname}"
+        raise "File #{output_fname} is alreasy exist." if File.exist?(output_fname)
+
+        FileUtils.mkdir_p(File.dirname(output_fname))
+        open(output_fname, 'w') do |f|
+          f.write content
+        end
       end
     end
   end
