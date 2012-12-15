@@ -15,16 +15,11 @@ end
 EOS
     end
 
-    describe 'The first argument is :table and the second is {html_id: "foo_table"}' do
-      before do
-        @rachis = Apodidae::Rachis.new(:table,html_id: 'foo_table')
-      end
+    describe 'when rachis have right name' do
+      before { @rachis = Apodidae::Rachis.new(:table,html_id: 'foo_table') }
+      subject { @combine = Apodidae::Combine.new([@barb], @rachis) }
 
-      subject do
-        @combine = Apodidae::Combine.new([@barb], @rachis)
-      end
-
-      specify do
+      it 'keys in barb statement are replaced by substitute block' do
         subject.instance_variable_get(:@result).should == <<EOS
 html do
   tag :table, id: 'foo_table'  do
@@ -34,16 +29,9 @@ EOS
       end
     end
 
-    describe 'not existing barb name is specified' do
-      before do
-        @rachis = Apodidae::Rachis.new(:table_wrong,html_id: 'foo_table')
-      end
-
-      specify do
-        Proc.new do
-          @combine = Apodidae::Combine.new([@barb], @rachis)
-        end.should raise_error(RuntimeError)
-      end
+    describe 'when rachis have wrong barb name' do
+      before { @rachis = Apodidae::Rachis.new(:wrong_barb_name,html_id: 'foo_table') }
+      specify { Proc.new { Apodidae::Combine.new([@barb], @rachis) }.should raise_error(RuntimeError) }
     end
   end
 end
