@@ -114,6 +114,69 @@ describe Apodidae::SubstituteSandbox do
       specify { subject.width.should == 150 }
     end
   end
+
+  describe "having two __label in block" do
+    before do
+      @substitute_sandbox = Apodidae::SubstituteSandbox.new
+      @substitute_sandbox.instance_eval do
+        __label :name, :width
+        row :age, 150
+
+        __label :id, :inner
+        list_item :users, 'Users'
+      end
+      @items = @substitute_sandbox.items
+    end
+
+    specify { @items.size.should == 2 }
+
+    describe 'with first item' do
+      subject { @items[0] }
+      specify { subject[0].should == :age }
+      specify { subject[1].should == 150 }
+      specify { subject.name.should == :age }
+      specify { subject.width.should == 150 }
+    end
+
+    describe 'with second item' do
+      subject { @items[1] }
+      specify { subject[0].should == :users }
+      specify { subject[1].should == 'Users' }
+      specify { subject.id.should == :users }
+      specify { subject.inner.should == 'Users' }
+    end
+  end
+
+  describe "having one __label and one item without __label in block" do
+    before do
+      @substitute_sandbox = Apodidae::SubstituteSandbox.new
+      @substitute_sandbox.instance_eval do
+        __label :name, :width
+        row :age, 150
+
+        list_item :users, 'Users'
+      end
+      @items = @substitute_sandbox.items
+    end
+
+    specify { @items.size.should == 2 }
+
+    describe 'with first item' do
+      subject { @items[0] }
+      specify { subject[0].should == :age }
+      specify { subject[1].should == 150 }
+      specify { subject.name.should == :age }
+      specify { subject.width.should == 150 }
+    end
+
+    describe 'with second item' do
+      subject { @items[1] }
+      specify { subject[0].should == :users }
+      specify { subject[1].should == 'Users' }
+      specify { Proc.new { subject.name }.should raise_error(RuntimeError) }
+      specify { Proc.new { subject.width }.should raise_error(RuntimeError) }
+    end
+  end
 end
 
 describe Apodidae::SubstituteItem do
