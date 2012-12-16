@@ -75,7 +75,7 @@ module Apodidae
     attr_reader :_name_, :_labels_, :_values_
 
     def initialize(name, labels, values)
-      @_name_ = name
+      @_name_ = name.to_s
       @_labels_ = labels && labels.map(&:to_s)
       @_values_ = values
     end

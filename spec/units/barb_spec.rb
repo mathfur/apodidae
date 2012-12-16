@@ -16,7 +16,9 @@ describe Apodidae do
         end
         EOS
       specify do
-        subject.substitute_rules.should == [[:abc, 123]]
+        subject.substitute_rules.size.should == 1
+        subject.substitute_rules.first._name_.should == 'abc'
+        subject.substitute_rules.first[0].should == 123
       end
     end
 
@@ -66,7 +68,9 @@ describe Apodidae do
         barb.add_rachis_attrs(:x => 15)
       end
 
-      specify { subject.substitute_rules.should == [[:abc, 15]] }
+      specify { subject.substitute_rules.size.should == 1 }
+      specify { subject.substitute_rules.first._name_ == 'abc' }
+      specify { subject.substitute_rules.first[0] == 15 }
     end
   end
 end
