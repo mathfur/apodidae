@@ -12,7 +12,7 @@ module Apodidae
 
     def substitute_rules
       @sandbox.instance_eval(@contents)
-      @sandbox.src_and_dst
+      @sandbox.rules
     end
 
     def add_rachis_attrs(names_and_values)
@@ -22,7 +22,7 @@ module Apodidae
   end
 
   class BarbSandbox
-    attr_reader :src_and_dst, :substitute_sandbox
+    attr_reader :rules, :substitute_sandbox
     def method_missing(*args); end
 
     def initialize
@@ -31,7 +31,7 @@ module Apodidae
 
     def substitute(&block)
       @substitute_sandbox.instance_eval(&block)
-      @src_and_dst = @substitute_sandbox.hash
+      @rules = @substitute_sandbox.hash
     end
   end
 
