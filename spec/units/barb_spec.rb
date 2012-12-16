@@ -16,7 +16,7 @@ describe Apodidae do
         end
         EOS
       specify do
-        subject.substitute_rules.should == {:abc => [123]}
+        subject.substitute_rules.should == [[:abc, 123]]
       end
     end
 
@@ -66,24 +66,75 @@ describe Apodidae do
         barb.add_rachis_attrs(:x => 15)
       end
 
-      specify { subject.substitute_rules.should == {:abc => [15]} }
+      specify { subject.substitute_rules.should == [[:abc, 15]] }
+    end
+  end
+end
+
+describe Apodidae::SubstituteSandbox do
+  describe "having no __label" do
+    before do
+      @substitute_sandbox = Apodidae::SubstituteSandbox.new
+      @substitute_sandbox.instance_eval do
+        row :x
+      end
+      @items = @substitute_sandbox.items
     end
 
+    specify { @items.size.should == 1 }
+
     describe do
-      it "labelありの場合" do
-        pending
-        subject { Apodidae::Barb.new('foo', <<-EOS) }
-          substitute do
-            __label def
-            abc 123
-          end
-          html do
-          end
-          EOS
-        specify { subject.name.should == 'foo' }
-        specify { subject.substitute_rules.should == {:abc => {:def => 123}} }
-              # abc.defのようにアクセスできるようにするべき?
+      subject { @items.first }
+      specify { subject[0].should == :x }
+      specify { subject[1].should be_nil }
+      specify do
+        Proc.new { subject.name }.should raise_error(RuntimeError)
+        Proc.new { subject.agk }.should raise_error(RuntimeError)
       end
+    end
+  end
+
+  describe "having __label in block" do
+    before do
+      @substitute_sandbox = Apodidae::SubstituteSandbox.new
+      @substitute_sandbox.instance_eval do
+        __label :name, :width
+        row :age, 150
+      end
+      @items = @substitute_sandbox.items
+    end
+
+    specify { @items.size.should == 1 }
+
+    describe do
+      subject { @items.first }
+      specify { subject[0].should == :age }
+      specify { subject[1].should == 150 }
+      specify { subject.name.should == :age }
+      specify { subject.width.should == 150 }
+    end
+  end
+end
+
+describe Apodidae::SubstituteItem do
+  context "when labels is specified" do
+    subject { Apodidae::SubstituteItem.new('foo', [:name, :age], ['suzuki', 30]) }
+    specify { subject._name_.should == 'foo' }
+    specify { subject[0].should == 'suzuki' }
+    specify { subject[1].should == 30 }
+
+    specify { subject[:name].should == 'suzuki' }
+    specify { subject.name.should == 'suzuki' }
+  end
+
+  context "when labels is not specified" do
+    subject { Apodidae::SubstituteItem.new('foo', nil, ['suzuki', 30]) }
+    specify { subject._name_.should == 'foo' }
+    specify { subject[0].should == 'suzuki' }
+    specify { subject[1].should == 30 }
+
+    specify do
+      Proc.new { subject[:name] }.should raise_error(RuntimeError)
     end
   end
 end

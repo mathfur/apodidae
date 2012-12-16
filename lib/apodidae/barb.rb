@@ -31,19 +31,33 @@ module Apodidae
 
     def substitute(&block)
       @substitute_sandbox.instance_eval(&block)
-      @rules = @substitute_sandbox.hash
+      @rules = @substitute_sandbox.items
     end
   end
 
   class SubstituteSandbox
-    attr_reader :hash
+    attr_reader :items
 
     def initialize
-      @hash = {}
+      @items = []
+      @current_name = nil
+      @current_labels = nil
     end
 
     def method_missing(name, *args)
-      @hash[name] = args
+      if name =~ /^__/
+        @current_name = nil
+        @current_labels = args
+      else
+        if !@current_name || @current_name == name
+          @current_name = name
+          @items << SubstituteItem.new(name, @current_labels, args)
+        else
+          @current_name = nil
+          @current_label = nil
+          @items << SubstituteItem.new(name, nil, args)
+        end
+      end
     end
 
     def add_rachis_attrs(names_and_values)
@@ -54,6 +68,30 @@ module Apodidae
           end
         end
       end
+    end
+  end
+
+  class SubstituteItem
+    attr_reader :_name_, :_labels_, :_values_
+
+    def initialize(name, labels, values)
+      @_name_ = name
+      @_labels_ = labels && labels.map(&:to_s)
+      @_values_ = values
+    end
+
+    def [](num)
+      if num.kind_of?(Integer)
+        @_values_[num]
+      else
+        raise "labels is not specified (key: #{num})" unless @_labels_
+        raise "key `#{num}` is not found in #{@_labels_.inspect}" unless index = @_labels_.index(num.to_s)
+        @_values_[index]
+      end
+    end
+
+    def method_missing(name, *args)
+      self[name]
     end
   end
 end
