@@ -6,7 +6,7 @@ describe Apodidae::Prehtml do
     describe 'when foo' do
       specify do
         Apodidae::Prehtml.new(<<-EOS).value.should ==
-          tag(:div, :class => "foo", :id => "bar") do
+          tag(:div, :class => 'foo', :id => 'bar') do
             tag(:span, :class => "foo2", :id => "bar2") do
               "baz"
             end
@@ -25,7 +25,7 @@ describe Apodidae::Prehtml do
 
       specify do
         Apodidae::Prehtml.new(%Q!tag(:span, :'data-foo' => 123){'baz'}!).value.
-          should == {:tag => 'span', :attrs => {:'data-foo' => '123'}, :inner => 'baz'}
+          should == {:tag => 'span', :attrs => {:'data-foo' => 123}, :inner => 'baz'}
       end
     end
   end
