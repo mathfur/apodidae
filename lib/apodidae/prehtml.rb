@@ -6,11 +6,17 @@ module Apodidae
       @sandbox = Sandbox.new
       @value = @sandbox.instance_eval(dsl_src)
     end
+
     def to_html
-      @sandbox.value
+      "<#{value[:tag]} #{value[:attrs].map{|k, v| %Q!#{k}="#{escape(v)}"!}.join(' ')}>#{value[:inner]}</span>"
     end
+
     def value
       @sandbox.value
+    end
+
+    def escape(v)
+      v.gsub('"', '""')
     end
   end
 
