@@ -15,6 +15,10 @@ module Apodidae
       @@all_barbs << self
     end
 
+    def self.clear_all_barbs
+      @@all_barbs = []
+    end
+
     def header_end
       /\s*#\s*__HEADER_END__\s*/
     end
@@ -22,6 +26,7 @@ module Apodidae
     def evaluate(left_edge, rachis)
       raise ArgumentError, "#{left_edge.inspect} is not Edge instance." unless left_edge.kind_of?(Edge)
 
+      raise "left_edge `#{left_edge.inspect}` is not found in `#{@left_edges.inspect}`" unless @left_edges.include?(left_edge)
       sandbox = Sandbox.new(left_edge, rachis)
       begin
         ERB.new(@erbed_contents, nil, '-').result(sandbox.get_binding)
@@ -45,6 +50,14 @@ module Apodidae
         when /^(\s*)#-->>\s*end\s*$/
           contexts.pop
           "#$1<%- end -%>"
+        when /^(\s*)#--==( *)(.*)$/
+          line = "#$1<%=#$2#{ $3.rstrip } %>"
+          contexts.each do |context|
+            context.each do |k, edge|
+              line = line.gsub(k){ edge.label }
+            end
+          end
+          line.rstrip
         else
           contexts.each do |context|
             context.each do |k, edge|
@@ -62,6 +75,7 @@ module Apodidae
     end
 
     class Sandbox
+      # edge :: wanted edge
       def initialize(edge, edge_value_pairs)
         @edge = edge
         @edge_value_pairs = edge_value_pairs
@@ -87,7 +101,11 @@ module Apodidae
       end
 
       def method_missing(name, *args)
-        @edge_value_pairs.find{|edge, value| edge.label.to_sym == name.to_sym }.try(:last)
+        all_variable_names = @edge_value_pairs.map(&:first).map(&:label)
+
+        edge_and_value = @edge_value_pairs
+          .find{|edge, value| edge.label.to_sym == name.to_sym } or raise "variable or method `#{name}` is not found. \nVARIABLES:\n#{all_variable_names.join("\n")}"
+        edge_and_value.try(:last)
       end
     end
   end

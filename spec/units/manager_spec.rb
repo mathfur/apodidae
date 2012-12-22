@@ -3,10 +3,14 @@
 require "spec_helper"
 
 describe Apodidae::Manager do
+  before do
+    Apodidae::Barb.clear_all_barbs
+  end
+
   shared_examples_for 'Manager' do
     describe '#initialize' do
       specify do
-        @manager.result.find{|k, v| k.label == :foo}.last.should be_equal_ignoring_spaces(<<-EOS)
+        @manager.result.find{|k, v| k.label == :abc}.last.should be_equal_ignoring_spaces(<<-EOS)
           tag(:div) { 'abc' }
         EOS
       end
@@ -27,7 +31,7 @@ describe Apodidae::Manager do
         describe "when tmp/output is specified" do
           it "output html to tmp/output/app/views/words/edit.html.erb" do
             target = "#{@output_dir1}/#{@relative_fname}"
-            @manager.write_to(Apodidae::Edge.new(:foo) => target)
+            @manager.write_to(Apodidae::Edge.new(:abc) => target)
 
             File.read(target).should be_equal_ignoring_spaces <<-EOS
               tag(:div) { 'abc' }
@@ -40,7 +44,7 @@ describe Apodidae::Manager do
         describe "when tmp/output2 is specified" do
           it "output html to tmp/output2/app/views/words/edit.html.erb" do
             target = "#{@output_dir1}/#{@relative_fname}"
-            @manager.write_to(Apodidae::Edge.new(:foo) => target)
+            @manager.write_to(Apodidae::Edge.new(:abc) => target)
 
             File.read(target).should be_equal_ignoring_spaces <<-EOS
               tag(:div) { 'abc' }
@@ -63,11 +67,11 @@ describe Apodidae::Manager do
       EOS
 
       @manager.set_connection_from_string(<<-EOS)
-        foo(:sample_barb) do
+        abc(:foo, :sample_barb) do
           inner(:str1)
         end
       EOS
-      @manager.add_rachis(Apodidae::Edge.new(:inner) => 'abc')
+      @manager.add_rachis(Apodidae::Edge.new(:str1) => 'abc')
       @manager.generate
     end
 
@@ -79,15 +83,13 @@ describe Apodidae::Manager do
       @manager = Apodidae::Manager.new
 
       Dir.mktmpdir do |tempdir|
-        tempfile = Tempfile.new(['barb', 'foo.barb'], tempdir)
-        tempfile.write(<<-EOS)
+        open("#{tempdir}/sample_barb.barb", 'w'){|f| f.write <<-EOS }
           #-->> gsub_by('hello' => Edge.new(:inner)) do
           #-->> output_to Edge.new(:foo) do
             tag(:div) { 'hello' }
           #-->> end
           #-->> end
         EOS
-        tempfile.close
 
         @manager.add_barb_from_file(tempdir)
       end
@@ -95,7 +97,7 @@ describe Apodidae::Manager do
       Dir.mktmpdir do |tempdir|
         tempfile = Tempfile.new(['connection', '.rb'], tempdir)
         tempfile.write(<<-EOS)
-          foo(:sample_barb) do
+          abc(:foo, :sample_barb) do
             inner(:str1)
           end
         EOS
@@ -107,7 +109,7 @@ describe Apodidae::Manager do
       Dir.mktmpdir do |tempdir|
         tempfile = Tempfile.new(['rachis', '.rachis'], tempdir)
         tempfile.write(<<-EOS)
-          inner 'abc'
+          str1 'abc'
         EOS
         tempfile.close
 

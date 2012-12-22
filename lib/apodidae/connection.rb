@@ -8,13 +8,15 @@ module Apodidae
       @sandbox.instance_eval(contents)
     end
 
-    def generate(edge, rachis)
-      self.injects.assoc(edge).try(:last).try(:generate, edge, rachis)
+    def generate(edge_in, rachis)
+      edge_and_inject = self.injects.find{|ein, eout, inject| ein == edge_in} or raise "`#{edge_in.inspect}` is not found in #{self.injects.map(&:first).inspect}"
+      _, edge_out, inject = edge_and_inject
+      inject.try(:generate, edge_out, rachis)
     end
 
     def generate_all(rachis)
-      self.injects.map do |edge, inject|
-        [edge, inject.try(:generate, edge, rachis)]
+      self.injects.map do |edge_in, edge_out, inject|
+        [edge_in, inject.try(:generate, edge_out, rachis)]
       end
     end
 
@@ -29,12 +31,14 @@ module Apodidae
         @injects = []
       end
 
-      def method_missing(label, barb_name, &block)
-        barb = Barb.find_by_name(barb_name) || label
+      def method_missing(label_in, label_out=nil, barb_name=nil, &block)
+        raise "method `#{label_in}` does not exist" unless label_out
+
+        barb = Barb.find_by_name(barb_name) || label_out
 
         sandbox = Sandbox.new
         sandbox.instance_eval(&block) if block_given?
-        @injects << [Edge.new(label), Inject.new(:html, barb, nil, sandbox.injects)]
+        @injects << [Edge.new(label_in), Edge.new(label_out), Inject.new(barb, nil, sandbox.injects)]
         @injects
       end
     end

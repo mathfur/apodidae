@@ -4,35 +4,72 @@ module Apodidae
   class Prehtml
     def initialize(dsl_src)
       @sandbox = Sandbox.new
-      @value = @sandbox.instance_eval(dsl_src)
+      @sandbox.instance_eval(dsl_src)
     end
-    def to_html
-      @sandbox.value
+
+    def to_html(opt={})
+      @sandbox.to_html(opt)
     end
+
     def value
       @sandbox.value
     end
-  end
 
-  class Sandbox
-    attr_reader :value
+    class Sandbox
+      attr_reader :value
 
-    def tag(name, attrs, &block)
-      @value = {:tag => name.to_s, :attrs => attrs, :inner => block_given? && block.call}
-    end
-
-    def to_html(flat_or_multiline=:multiline)
-      raise ArgumentError, "tag's second argument must be :m(ultiline) or :f(lat)"  unless %w{multiline flat m f}.include?(flat_or_multiline.to_s)
-
-      @value = if block_given?
-        case flat_or_multiline.to_s[0..0]
-        when 'f'
-          "<#{name}>#{block.call}</#{name}>"
+      def tag(name, attrs={}, &block)
+        raise ArgumentError, "tag name #{name.inspect} must consist of alphanum" unless name =~ /^[a-zA-Z0-9]+$/
+        if block_given?
+          sandbox = Sandbox.new
+          eval_return = sandbox.instance_eval(&block)
+          inner = sandbox.value || eval_return
         else
-          "<#{name}>\n  #{block.call}\n</#{name}>\n"
+          inner = attrs[:inner]
         end
-      else
-        "<#{name}/>"
+        @value = {:tag => name.to_s, :attrs => attrs, :inner => inner}
+      end
+
+      def to_html(opt={})
+        @value ? Helper.to_html(@value, opt[:multiline] || opt[:m]) : ''
+      end
+
+      module Helper
+        def escape(v)
+          v.gsub('"', '\\"')
+        end
+        module_function :escape
+
+        def to_html(value, multiline)
+          tag = value[:tag]
+          attrs = value[:attrs].map{|k, v| %Q!#{k}="#{Helper.escape(v)}"!}.join(' ')
+          inner = value[:inner]
+          htmled_inner = case inner
+                         when String
+                           inner
+                         when Hash
+                           Helper.to_html(inner, multiline)
+                         when NilClass, FalseClass
+                           nil
+                         else
+                           raise ArgumentError
+                         end
+
+          arr = [
+            "<#{tag}#{attrs.blank? ? '' : ' '+attrs}>",
+            multiline ? indent_each_line(htmled_inner) : htmled_inner,
+            "</#{tag}>"
+          ].compact
+
+          multiline ?  arr.join("\n") : arr.join('')
+        end
+        module_function :to_html
+
+        def indent_each_line(str,opt={})
+          indent_size = opt[:indent_size] || 2
+          str.split("\n").map{|line| "#{' '*indent_size}#{line}"}.join("\n")
+        end
+        module_function :indent_each_line
       end
     end
   end

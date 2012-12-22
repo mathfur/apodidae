@@ -17,10 +17,11 @@ opts = GetoptLong.new(
   ['--barb-dir', '-b', GetoptLong::OPTIONAL_ARGUMENT],
   ['--rachis-dir', '-r', GetoptLong::OPTIONAL_ARGUMENT],
   ['--connection-file', '-c', GetoptLong::OPTIONAL_ARGUMENT],
-  ['--foo-output-file', '-o', GetoptLong::OPTIONAL_ARGUMENT]
+  ['--output-file', '-o', GetoptLong::OPTIONAL_ARGUMENT]
 )
 
 manager = Apodidae::Manager.new
+dealing_label = nil
 
 begin
   opts.each do |opt, arg|
@@ -34,8 +35,8 @@ begin
       manager.add_rachis_from_file(arg)
     when '--connection-file'
       manager.set_connection_from_file(arg)
-    when '--foo-output-file'
-      output_dir = arg
+    when '--output-file'
+      dealing_label, output_dir = arg.split(':')
     else
     end
   end
@@ -45,4 +46,4 @@ rescue
 end
 
 manager.generate
-manager.write_to(Apodidae::Edge.new(:foo) => output_dir)
+manager.write_to(Apodidae::Edge.new(dealing_label) => output_dir)

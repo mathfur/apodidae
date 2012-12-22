@@ -45,10 +45,6 @@ EOS
   end
 
   describe "with --output-dir" do
-    before do
-      @relative_fname = "app/views/words/edit.html.erb"
-    end
-
     describe "when tmp/output is specified" do
       it "output html to tmp/output/app/views/words/edit.html.erb" do
         output_file = "#{BASE_DIR}/tmp/output/foo"
@@ -57,8 +53,7 @@ EOS
         Dir.mktmpdir do |barb_dir|
           Dir.mktmpdir do |connection_dir|
             Dir.mktmpdir do |rachis_dir|
-              barb_file = "#{barb_dir}/sample_barb.barb"
-              open(barb_file, 'w'){|f| f.write(<<-EOS) }
+              open("#{barb_dir}/sample_barb.barb", 'w'){|f| f.write(<<-EOS) }
                 #-->> gsub_by('hello' => Edge.new(:inner)) do
                 #-->> output_to Edge.new(:foo) do
                   tag(:div) { 'hello' }
@@ -66,17 +61,27 @@ EOS
                 #-->> end
               EOS
 
+              open("#{barb_dir}/convert_to_html.barb", 'w'){|f| f.write(<<-EOS) }
+                #-->> gsub_by('Prehtml_src' => Edge.new(:input, :prehtml)) do
+                #-->> output_to Edge.new(:baz, :html) do
+                #--==   Prehtml.new(Prehtml_src).to_html
+                #-->> end
+                #-->> end
+              EOS
+
               connection_file = Tempfile.new(['connection', '.rb'], connection_dir)
               connection_file.write(<<-EOS)
-                foo(:sample_barb) do
-                  inner(:str1)
+                abc(:baz, :convert_to_html) do
+                  input(:foo, :sample_barb) do
+                    inner(:str1)
+                  end
                 end
               EOS
               connection_file.close
 
               rachis_file = Tempfile.new(['rachis', '.rachis'], rachis_dir)
               rachis_file.write(<<-EOS)
-                inner 'abc'
+                str1 'abc'
               EOS
               rachis_file.close
 
@@ -84,18 +89,16 @@ EOS
                 "--barb-dir=#{barb_dir}",
                 "--rachis-dir=#{rachis_dir}",
                 "--connection-file=#{connection_file.path}",
-                "--foo-output-file=#{output_file}"
+                "--output-file=abc:#{output_file}"
               ])
               File.read(output_file).should be_equal_ignoring_spaces <<-EOS
-                tag(:div) { 'abc' }
+                <div>abc</div>
               EOS
             end
           end
         end
       end
     end
-
-    it "TODO: --foo-output-file=..を戻す必要がある"
   end
 
   describe "without options" do

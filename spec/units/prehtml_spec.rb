@@ -1,9 +1,9 @@
 # -*- encoding: utf-8 -*-
 require "spec_helper"
 
-describe Apodidae::Prehtml do
+describe Apodidae::Prehtml::Sandbox do
   describe '#tag' do
-    describe 'when foo' do
+    describe do
       specify do
         Apodidae::Prehtml.new(<<-EOS).value.should ==
           tag(:div, :class => 'foo', :id => 'bar') do
@@ -27,6 +27,90 @@ describe Apodidae::Prehtml do
         Apodidae::Prehtml.new(%Q!tag(:span, :'data-foo' => 123){'baz'}!).value.
           should == {:tag => 'span', :attrs => {:'data-foo' => 123}, :inner => 'baz'}
       end
+
+      specify do
+        Apodidae::Prehtml.new(%Q!tag(:br)!).value.
+        should == {:tag => 'br', :attrs => {}, :inner => nil}
+      end
+
+      describe "tag name include not alphanum character" do
+        it "raise ArgumentError" do
+          Proc.new{ Apodidae::Prehtml.new(%Q!tag(:'br"')!) }.should raise_error(ArgumentError)
+         end
+      end
     end
+  end
+
+  describe '#to_html' do
+    before do
+      @sandbox = Apodidae::Prehtml::Sandbox.new
+    end
+
+    specify do
+      @sandbox.instance_variable_set(:@value,
+        {:tag => 'span', :attrs => {:class => 'foo2', :id => 'bar2'}, :inner => 'baz'})
+      @sandbox.to_html.should == %Q!<span class="foo2" id="bar2">baz</span>!
+    end
+
+    specify do
+      @sandbox.instance_variable_set(:@value,
+        {:tag => 'span', :attrs => {:class => 'foo"'}})
+      @sandbox.to_html.should == %Q!<span class="foo\\""></span>!
+    end
+
+    describe 'flat option is on' do
+      it "return 1 line string" do
+        @sandbox.instance_variable_set(:@value,
+           {:tag => 'span', :attrs => {:class => 'foo"'}})
+        @sandbox.to_html.should == %Q!<span class="foo\\""></span>!
+      end
+    end
+
+    describe 'flat option is off' do
+      it "return multiple line string" do
+        @sandbox.instance_variable_set(:@value,
+          {:tag => 'span', :attrs => {:class => 'foo"'}, :inner => 'baz'})
+        @sandbox.to_html(:multiline => true).should be_equal_ignoring_spaces <<-EOS
+        <span class="foo\\"">
+          baz
+        </span>
+        EOS
+      end
+
+      it "return multiple line string with layered tag" do
+        @sandbox.instance_variable_set(:@value, {
+          :tag => 'span',
+          :attrs => {:class => 'foo"'},
+          :inner => {
+            :tag => 'div',
+            :attrs => {},
+            :inner => 'baz'
+          }
+        })
+        @sandbox.to_html(:multiline => true).should be_equal_ignoring_spaces <<-EOS
+        <span class="foo\\"">
+          <div>
+            baz
+          </div>
+        </span>
+        EOS
+      end
+    end
+  end
+end
+
+describe Apodidae::Prehtml do
+  describe '#to_html' do
+    before do
+      @prehtml = Apodidae::Prehtml.new('')
+    end
+
+    describe "width option is 123" do
+      it "return lines, and the each line do not have more than 123 length" do
+        pending
+      end
+    end
+
+    it "innerがnilの場合とそうでない場合"
   end
 end
