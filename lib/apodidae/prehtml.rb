@@ -17,9 +17,9 @@ module Apodidae
   class Sandbox
     attr_reader :val
 
-    def tag(name, &block)
+    def tag(name, attrs, &block)
       @val = if block_given?
-        HtmlTag.new(name, {}, [block.call])
+        #{:tag => name, :attrs =>
       else
         HtmlTag.new(name, {}, [])
       end
@@ -38,23 +38,6 @@ module Apodidae
       else
         "<#{name}/>"
       end
-    end
-  end
-
-  class HtmlTag
-    attr_reader :name, :attrs, :descendants
-
-    def initialize(name, attrs={}, descendants=[])
-      @name = name.to_s
-      @attrs = attrs
-      @descendants = descendants
-    end
-
-    def ==(another_tag)
-      @name == another_tag.name &&
-      @attrs == another_tag.attrs &&
-      @descendants.size == another_tag.descendants.size &&
-      @descendants == descendants
     end
   end
 end
