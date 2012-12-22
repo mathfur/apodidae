@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 require "spec_helper"
 
-describe Apodidae::Prehtml do
+describe Apodidae::Sandbox do
   describe '#tag' do
     describe 'when foo' do
       specify do
@@ -28,5 +28,21 @@ describe Apodidae::Prehtml do
           should == {:tag => 'span', :attrs => {:'data-foo' => 123}, :inner => 'baz'}
       end
     end
+  end
+end
+
+
+
+describe Apodidae::Prehtml do
+  describe '#to_html' do
+    specify do
+      prehtml = Apodidae::Prehtml.new('')
+      prehtml.should_receive(:value).and_return(:tag => 'span', :attrs => {:class => 'foo2', :id => 'bar2'}, :inner => 'baz')
+      prehtml.to_html.should == "<span class='foo2' id='bar2'>baz</span>"
+    end
+
+    it "class内にクオートが入っている場合"
+    it "フラットにしたい場合"
+    it "横幅123に押さえたい場合"
   end
 end
