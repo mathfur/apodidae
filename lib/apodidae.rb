@@ -1,4 +1,6 @@
 require "strscan"
+require "active_support"
+require "active_support/core_ext"
 
 require "./lib/apodidae/version"
 require "./lib/apodidae/prehtml"

@@ -52,6 +52,15 @@ describe Apodidae::Prehtml do
           }
         }
     end
+
+    specify do
+      Apodidae::Prehtml.new(%Q!zen("div[class=abc]")!).value.should ==
+        {
+          :tag => 'div',
+          :attrs => {:class => 'abc'},
+          :inner => ''
+        }
+    end
   end
 end
 

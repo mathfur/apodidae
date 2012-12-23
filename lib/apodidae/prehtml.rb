@@ -57,10 +57,25 @@ module Apodidae
         case
         when s.scan(/(.+?)>(.+)/)
           return zen(s[1]).merge(:inner => zen(s[2]) || [])
-        when s.scan(/([a-zA-Z0-9]+)(\{([^\}]*)\})?/)
-          return {:tag => s[1], :attrs => {}, :inner => s[3] || ''}
+        when s.scan(/
+                    ([a-zA-Z0-9]+)
+                    (
+                      \[
+                        [^\]]*
+                      \]
+                    )?
+                    (?:
+                      \{
+                        ([^\}]*)
+                      \}
+                    )?/x)
+          return {:tag => s[1], :attrs => parse_brankets(s[2]), :inner => s[3] || ''}
         end
       end
+    end
+
+    def self.parse_brankets(attrs)
+      attrs.blank? ? {} : attrs.scan(/\[([^\]=]*)=([^\]=]*)\]/).inject({}){|h, (k, v)| h[k.to_sym] = v; h}
     end
   end
 end
