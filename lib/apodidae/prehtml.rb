@@ -3,7 +3,7 @@
 module Apodidae
   class Prehtml
     def initialize(dsl_src)
-      @sandbox = Sandbox.new(self)
+      @sandbox = Sandbox.new
       @value = @sandbox.instance_eval(dsl_src)
     end
     def to_html
@@ -17,13 +17,19 @@ module Apodidae
   class Sandbox
     attr_reader :value
 
-    def initialize(parent)
-      raise ArgumentError unless parent.kind_of?(Prehtml)
-      @parent = parent
+    def initialize
+      @value = []
     end
 
-    def tag(name, attrs, &block)
-      @value = {:tag => name.to_s, :attrs => attrs, :inner => block_given? && block.call}
+    def tag(name, attrs={}, &block)
+      sandbox = Sandbox.new
+      if block_given?
+        block_return = sandbox.instance_eval(&block)
+        block_value = sandbox.value.blank_then? block_return
+      else
+        block_value = []
+      end
+      @value = @value + [{:tag => name.to_s, :attrs => attrs, :inner => block_value}]
     end
 
     def zen(statement)
@@ -55,8 +61,13 @@ module Apodidae
 
       while !s.eos?
         case
+        when s.scan(/(.+?)\+(.+)/)
+          return [zen(s[1])].flatten + [zen(s[2])].flatten
         when s.scan(/(.+?)>(.+)/)
-          return zen(s[1]).merge(:inner => zen(s[2]) || [])
+          first_tags = zen(s[1])
+          raise "tags before > must only one tag" unless first_tags.kind_of?(Array) and first_tags.size == 1
+          first_tag = first_tags.first
+          return [first_tag.merge(:inner => [zen(s[2])].flatten || [])]
         when s.scan(/
                     ([a-zA-Z0-9]+)
                     (
@@ -69,7 +80,7 @@ module Apodidae
                         ([^\}]*)
                       \}
                     )?/x)
-          return {:tag => s[1], :attrs => parse_brankets(s[2]), :inner => s[3] || ''}
+          return [{:tag => s[1], :attrs => parse_brankets(s[2]), :inner => s[3] || []}]
         end
       end
     end
