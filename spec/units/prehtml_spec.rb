@@ -54,11 +54,15 @@ describe Apodidae::Prehtml do
     end
 
     specify do
-      Apodidae::Prehtml.new(%Q!zen("div[class=abc]")!).value.should ==
+      Apodidae::Prehtml.new(%Q!zen("div[class=abc]>span[id=123]")!).value.should ==
         {
           :tag => 'div',
           :attrs => {:class => 'abc'},
-          :inner => ''
+          :inner => {
+            :tag => 'span',
+            :attrs => {:id => '123'},
+            :inner => ''
+          }
         }
     end
   end
