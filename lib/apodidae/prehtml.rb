@@ -3,7 +3,7 @@
 module Apodidae
   class Prehtml
     def initialize(dsl_src)
-      @sandbox = Sandbox.new
+      @sandbox = Sandbox.new(self)
       @value = @sandbox.instance_eval(dsl_src)
     end
     def to_html
@@ -17,8 +17,17 @@ module Apodidae
   class Sandbox
     attr_reader :value
 
+    def initialize(parent)
+      raise ArgumentError unless parent.kind_of?(Prehtml)
+      @parent = parent
+    end
+
     def tag(name, attrs, &block)
       @value = {:tag => name.to_s, :attrs => attrs, :inner => block_given? && block.call}
+    end
+
+    def zen(statement)
+      @value = Helper.zen(statement)
     end
 
     def to_html(flat_or_multiline=:multiline)
@@ -33,6 +42,24 @@ module Apodidae
         end
       else
         "<#{name}/>"
+      end
+    end
+  end
+
+  class Helper
+    def self.zen(statement)
+      s = StringScanner.new(statement)
+
+      result = {}
+      current_tags = []
+
+      while !s.eos?
+        case
+        when s.scan(/(.+?)>(.+)/)
+          return zen(s[1]).merge(:inner => zen(s[2]) || [])
+        when s.scan(/[a-zA-Z0-9]+/)
+          return {:tag => s[0], :attrs => {}, :inner => ''}
+        end
       end
     end
   end
