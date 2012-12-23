@@ -24,14 +24,31 @@ describe Apodidae::Prehtml do
     end
 
     specify do
-      Apodidae::Prehtml.new(%Q!zen("div>span")!).value.should ==
+      Apodidae::Prehtml.new(%Q!zen("body>div>span")!).value.should ==
         {
-          :tag => 'div',
+          :tag => 'body',
+          :attrs => {},
+          :inner => {
+            :tag => 'div',
+            :attrs => {},
+            :inner => {
+              :tag => 'span',
+              :attrs => {},
+              :inner => ''
+            }
+          }
+        }
+    end
+
+    specify do
+      Apodidae::Prehtml.new(%Q!zen("body>span{test}")!).value.should ==
+        {
+          :tag => 'body',
           :attrs => {},
           :inner => {
             :tag => 'span',
             :attrs => {},
-            :inner => ''
+            :inner => 'test'
           }
         }
     end

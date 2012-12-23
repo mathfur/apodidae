@@ -57,8 +57,8 @@ module Apodidae
         case
         when s.scan(/(.+?)>(.+)/)
           return zen(s[1]).merge(:inner => zen(s[2]) || [])
-        when s.scan(/[a-zA-Z0-9]+/)
-          return {:tag => s[0], :attrs => {}, :inner => ''}
+        when s.scan(/([a-zA-Z0-9]+)(\{([^\}]*)\})?/)
+          return {:tag => s[1], :attrs => {}, :inner => s[3] || ''}
         end
       end
     end
