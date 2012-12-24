@@ -14,8 +14,13 @@ opts = GetoptLong.new(
   ['--help', '-h', GetoptLong::NO_ARGUMENT],
   ['--version', '-v', GetoptLong::NO_ARGUMENT],
   ['--watch', '-w', GetoptLong::NO_ARGUMENT],
-  ['--output-dir', '-o', GetoptLong::OPTIONAL_ARGUMENT]
+  ['--barb-dir', '-b', GetoptLong::OPTIONAL_ARGUMENT],
+  ['--rachis-dir', '-r', GetoptLong::OPTIONAL_ARGUMENT],
+  ['--connection-file', '-c', GetoptLong::OPTIONAL_ARGUMENT],
+  ['--foo-output-file', '-o', GetoptLong::OPTIONAL_ARGUMENT]
 )
+
+manager = Apodidae::Manager.new
 
 begin
   opts.each do |opt, arg|
@@ -23,7 +28,13 @@ begin
     when '--help'; puts usage; exit
     when '--version'; puts Apodidae::VERSION; exit
     when '--watch'; puts 'before implementation.'; exit
-    when '--output-dir'
+    when '--barb-dir'
+      manager.add_barb_from_file(arg)
+    when '--rachis-dir'
+      manager.add_rachis_from_file(arg)
+    when '--connection-file'
+      manager.set_connection_from_file(arg)
+    when '--foo-output-file'
       output_dir = arg
     else
     end
@@ -33,5 +44,5 @@ rescue
   exit
 end
 
-manager = Apodidae::Manager.new
-manager.write_to(output_dir)
+manager.generate
+manager.write_to(:foo => output_dir)

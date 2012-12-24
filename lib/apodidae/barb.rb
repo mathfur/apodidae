@@ -2,96 +2,82 @@
 
 module Apodidae
   class Barb
-    attr_reader :name, :contents
+    attr_reader :name, :contents, :erbed_contents, :left_edges, :right_edges
+
+    @@all_barbs = []
 
     def initialize(name, contents)
       @name = name.to_s
       @contents = contents
-      @sandbox = BarbSandbox.new
+      @left_edges = []
+      @right_edges = []
+      @erbed_contents = erbed(contents)
+      @@all_barbs << self
     end
 
-    def substitute_rules
-      @sandbox.instance_eval(@contents)
-      @sandbox.rules
+    def header_end
+      /\s*#\s*__HEADER_END__\s*/
     end
 
-    def add_rachis_attrs(names_and_values)
-      @sandbox.substitute_sandbox.add_rachis_attrs(names_and_values)
-      self
-    end
-  end
-
-  class BarbSandbox
-    attr_reader :rules, :substitute_sandbox
-    def method_missing(*args); end
-
-    def initialize
-      @substitute_sandbox = SubstituteSandbox.new
+    def evaluate(left_edge, rachis)
+      sandbox = Sandbox.new(rachis)
+      ERB.new(@erbed_contents, nil, '-').result(sandbox.get_binding)
     end
 
-    def substitute(&block)
-      @substitute_sandbox.instance_eval(&block)
-      @rules = @substitute_sandbox.items
-    end
-  end
-
-  class SubstituteSandbox
-    attr_reader :items
-
-    def initialize
-      @items = []
-      @current_name = nil
-      @current_labels = nil
-    end
-
-    def method_missing(name, *args)
-      if name =~ /^__/
-        @current_name = nil
-        @current_labels = args
-      else
-        if !@current_name || @current_name == name
-          @current_name = name
-          @items << SubstituteItem.new(name, @current_labels, args)
+    def erbed(contents)
+      contexts = []
+      result = contents.to_enum(:each_line).map do |line|
+        case line
+        when /^(\s*)#-->>\s*(output_to\(?\s*(.*)\)?\s*do\s*)$/
+          @left_edges << eval($3)
+          "#$1<%- #{ $2.rstrip } -%>"
+        when /^(\s*)#-->>\s*((?:loop_by|gsub_by)\(\s*\{?(.*)\}?\s*\) do\s*)$/
+          arg_hash = eval("{#$3}")
+          @right_edges += arg_hash.values
+          contexts << arg_hash
+          "#$1<%- #{ $2.rstrip } -%>"
+        when /^(\s*)#-->>\s*end\s*$/
+          contexts.pop
+          "#$1<%- end -%>"
         else
-          @current_name = nil
-          @current_label = nil
-          @items << SubstituteItem.new(name, nil, args)
-        end
-      end
-    end
-
-    def add_rachis_attrs(names_and_values)
-      self.class.class_eval do
-        names_and_values.each do |k, v|
-          define_method k do
-            return v
+          contexts.each do |context|
+            context.each do |k, edge|
+              line = line.gsub(k){ "<%= #{edge.label} %>" }
+            end
           end
+          line.rstrip
         end
+      end.join("\n")
+      (result.blank? ? '' : (result + "\n"))
+    end
+
+    def self.find_by_name(barb_name)
+      @@all_barbs.find{|barb| barb.name.to_s == barb_name.to_s}
+    end
+
+    class Sandbox
+      def initialize(name_value_pairs)
+        @name_value_pairs = name_value_pairs
+        @result = {}
       end
-    end
-  end
 
-  class SubstituteItem
-    attr_reader :_name_, :_labels_, :_values_
-
-    def initialize(name, labels, values)
-      @_name_ = name.to_s
-      @_labels_ = labels && labels.map(&:to_s)
-      @_values_ = values
-    end
-
-    def [](num)
-      if num.kind_of?(Integer)
-        @_values_[num]
-      else
-        raise "labels is not specified (key: #{num})" unless @_labels_
-        raise "key `#{num}` is not found in #{@_labels_.inspect}" unless index = @_labels_.index(num.to_s)
-        @_values_[index]
+      def get_binding
+        binding
       end
-    end
 
-    def method_missing(name, *args)
-      self[name]
+      def gsub_by(*args, &block)
+        sandbox = Sandbox.new(@name_value_pairs)
+        sandbox.instance_eval(&block)
+        sandbox
+      end
+
+      def output_to(target, &block)
+        @result[target] = block.call
+      end
+
+      def method_missing(name, *args)
+        @name_value_pairs.assoc(name.to_sym).try(:last)
+      end
     end
   end
 end

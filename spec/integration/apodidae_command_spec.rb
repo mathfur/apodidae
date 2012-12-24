@@ -2,11 +2,6 @@
 require "spec_helper"
 
 describe 'apodidae command' do
-  # apodidaeコマンドを実行できる
-  it "can be run" do
-    IO.popen(["#{BASE_DIR}/bin/apodidae"],  'r+')
-  end
-
   describe 'with --help option' do
     it "output help statement" do
       execute_apodidae_command("--help").should == <<EOS
@@ -56,29 +51,51 @@ EOS
 
     describe "when tmp/output is specified" do
       it "output html to tmp/output/app/views/words/edit.html.erb" do
-        @output_dir = "#{BASE_DIR}/tmp/output"
-        @output_fname = "#{@output_dir}/#{@relative_fname}"
-        FileUtils.rm_rf(@output_dir)
+        output_dir = "#{BASE_DIR}/tmp/output/foo"
+        FileUtils.rm_rf(output_dir)
 
-        execute_apodidae_command("--output-dir=#{@output_dir}")
+        Dir.mktmpdir do |barb_dir|
+          Dir.mktmpdir do |connection_dir|
+            Dir.mktmpdir do |rachis_dir|
+              barb_file = "#{barb_dir}/sample_barb.barb"
+              open(barb_file, 'w'){|f| f.write(<<-EOS) }
+                #-->> gsub_by('hello' => Edge.new(:inner)) do
+                #-->> output_to Edge.new(:foo) do
+                  tag(:div) { 'hello' }
+                #-->> end
+                #-->> end
+              EOS
 
-        File.read(@output_fname).should == <<EOS
-<%= form_for(@word) do |f| %>
-  <div class="field">
-    <%= f.label :name %><br />
-    <%= f.text_field :name %>
-  </div>
-  <div class="field">
-    <%= f.label :mail %><br />
-    <%= f.text_field :mail %>
-  </div>
-  <div class="actions">
-    <%= f.submit %>
-  </div>
-<% end %>
-EOS
+              connection_file = Tempfile.new(['connection', '.rb'], connection_dir)
+              connection_file.write(<<-EOS)
+                foo(:sample_barb) do
+                  inner(:str1)
+                end
+              EOS
+              connection_file.close
+
+              rachis_file = Tempfile.new(['rachis', '.rachis'], rachis_dir)
+              rachis_file.write(<<-EOS)
+                inner 'abc'
+              EOS
+              rachis_file.close
+
+              execute_apodidae_command([
+                "--barb-dir=#{barb_dir}",
+                "--rachis-dir=#{rachis_dir}",
+                "--connection-file=#{connection_file.path}",
+                "--foo-output-file=#{output_dir}"
+              ])
+              File.read(output_dir).should be_equal_ignoring_spaces <<-EOS
+                tag(:div) { 'abc' }
+              EOS
+            end
+          end
+        end
       end
     end
+
+    it "TODO: --foo-output-file=..を戻す必要がある"
   end
 
   describe "without options" do
