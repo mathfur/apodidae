@@ -45,4 +45,4 @@ rescue
 end
 
 manager.generate
-manager.write_to(:foo => output_dir)
+manager.write_to(Apodidae::Edge.new(:foo) => output_dir)

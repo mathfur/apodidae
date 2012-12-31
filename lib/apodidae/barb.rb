@@ -20,8 +20,14 @@ module Apodidae
     end
 
     def evaluate(left_edge, rachis)
-      sandbox = Sandbox.new(rachis)
-      ERB.new(@erbed_contents, nil, '-').result(sandbox.get_binding)
+      raise ArgumentError, "#{left_edge.inspect} is not Edge instance." unless left_edge.kind_of?(Edge)
+
+      sandbox = Sandbox.new(left_edge, rachis)
+      begin
+        ERB.new(@erbed_contents, nil, '-').result(sandbox.get_binding)
+      rescue SyntaxError => e
+        raise e, "#{e.message}\n\n#translated erb is following.\n------\n#{@erbed_contents}\n------\n"
+      end
     end
 
     def erbed(contents)
@@ -30,7 +36,7 @@ module Apodidae
         case line
         when /^(\s*)#-->>\s*(output_to\(?\s*(.*)\)?\s*do\s*)$/
           @left_edges << eval($3)
-          "#$1<%- #{ $2.rstrip } -%>"
+          "#$1<%- if #{ $3.rstrip } == edge -%>"
         when /^(\s*)#-->>\s*((?:loop_by|gsub_by)\(\s*\{?(.*)\}?\s*\) do\s*)$/
           arg_hash = eval("{#$3}")
           @right_edges += arg_hash.values
@@ -56,8 +62,9 @@ module Apodidae
     end
 
     class Sandbox
-      def initialize(name_value_pairs)
-        @name_value_pairs = name_value_pairs
+      def initialize(edge, edge_value_pairs)
+        @edge = edge
+        @edge_value_pairs = edge_value_pairs
         @result = {}
       end
 
@@ -66,7 +73,7 @@ module Apodidae
       end
 
       def gsub_by(*args, &block)
-        sandbox = Sandbox.new(@name_value_pairs)
+        sandbox = Sandbox.new(@edge, @edge_value_pairs)
         sandbox.instance_eval(&block)
         sandbox
       end
@@ -75,8 +82,12 @@ module Apodidae
         @result[target] = block.call
       end
 
+      def edge
+        @edge
+      end
+
       def method_missing(name, *args)
-        @name_value_pairs.assoc(name.to_sym).try(:last)
+        @edge_value_pairs.find{|edge, value| edge.label.to_sym == name.to_sym }.try(:last)
       end
     end
   end

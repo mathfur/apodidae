@@ -51,8 +51,8 @@ EOS
 
     describe "when tmp/output is specified" do
       it "output html to tmp/output/app/views/words/edit.html.erb" do
-        output_dir = "#{BASE_DIR}/tmp/output/foo"
-        FileUtils.rm_rf(output_dir)
+        output_file = "#{BASE_DIR}/tmp/output/foo"
+        FileUtils.rm_rf(output_file)
 
         Dir.mktmpdir do |barb_dir|
           Dir.mktmpdir do |connection_dir|
@@ -84,9 +84,9 @@ EOS
                 "--barb-dir=#{barb_dir}",
                 "--rachis-dir=#{rachis_dir}",
                 "--connection-file=#{connection_file.path}",
-                "--foo-output-file=#{output_dir}"
+                "--foo-output-file=#{output_file}"
               ])
-              File.read(output_dir).should be_equal_ignoring_spaces <<-EOS
+              File.read(output_file).should be_equal_ignoring_spaces <<-EOS
                 tag(:div) { 'abc' }
               EOS
             end

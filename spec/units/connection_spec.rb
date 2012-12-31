@@ -21,19 +21,19 @@ describe Apodidae::Connection do
             end
           EOS
         @inject1 = Apodidae::Inject.new(:html, :inner)
-        @inject2 = Apodidae::Inject.new(:html, @barb, nil, [[:inner, @inject1]])
+        @inject2 = Apodidae::Inject.new(:html, @barb, nil, [[Apodidae::Edge.new(:inner), @inject1]])
       end
 
-      specify { @connection.injects.should == [[:foo, @inject2]] }
+      specify { @connection.injects.should == [[Apodidae::Edge.new(:foo), @inject2]] }
 
       specify do
-        @connection.generate(:foo, [[:inner, 'abc']]).should == <<-EOS
+        @connection.generate(Apodidae::Edge.new(:foo), [[Apodidae::Edge.new(:inner), 'abc']]).should == <<-EOS
           tag(:div) { 'abc' }
         EOS
       end
 
       specify do
-        @connection.generate_all([[:inner, 'abc']]).should == [[:foo, <<-EOS]]
+        @connection.generate_all([[Apodidae::Edge.new(:inner), 'abc']]).should == [[Apodidae::Edge.new(:foo), <<-EOS]]
           tag(:div) { 'abc' }
         EOS
       end

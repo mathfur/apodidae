@@ -8,5 +8,10 @@ module Apodidae
       @label = label
       @type = type
     end
+
+    def ==(another_edge)
+      (self.label == another_edge.label) and
+      (self.type  == another_edge.type)
+    end
   end
 end

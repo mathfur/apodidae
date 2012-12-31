@@ -45,9 +45,10 @@ module Apodidae
       end
     end
 
-    def write_to(label_target_pairs)
-      @result.each do |label, content|
-        target = label_target_pairs[label]
+    def write_to(edge_target_pairs)
+      @result.each do |edge, content|
+        target = edge_target_pairs.find{|k, v| k == edge}.try(:last)
+        raise "target is not found. edge_target_pairs:#{edge_target_pairs.inspect}, edge:#{edge.inspect}" unless target
         raise "File #{target} is alreasy exist." if File.exist?(target)
 
         FileUtils.mkdir_p(File.dirname(target))

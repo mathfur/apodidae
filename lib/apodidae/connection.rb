@@ -8,13 +8,13 @@ module Apodidae
       @sandbox.instance_eval(contents)
     end
 
-    def generate(label, rachis)
-      self.injects.assoc(label).try(:last).try(:generate,label, rachis)
+    def generate(edge, rachis)
+      self.injects.assoc(edge).try(:last).try(:generate, edge, rachis)
     end
 
     def generate_all(rachis)
-      self.injects.map do |label, inject|
-        [label, inject.try(:generate, label, rachis)]
+      self.injects.map do |edge, inject|
+        [edge, inject.try(:generate, edge, rachis)]
       end
     end
 
@@ -34,7 +34,7 @@ module Apodidae
 
         sandbox = Sandbox.new
         sandbox.instance_eval(&block) if block_given?
-        @injects << [label, Inject.new(:html, barb, nil, sandbox.injects)]
+        @injects << [Edge.new(label), Inject.new(:html, barb, nil, sandbox.injects)]
         @injects
       end
     end

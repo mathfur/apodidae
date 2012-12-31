@@ -19,15 +19,15 @@ describe Apodidae::Inject do
       EOS
 
       @inject1 = Apodidae::Inject.new(:string, :inner)
-      @inject2 = Apodidae::Inject.new(:html, @barb, nil, [[:inner, @inject1]])
+      @inject2 = Apodidae::Inject.new(:html, @barb, nil, [[Apodidae::Edge.new(:inner), @inject1]])
     end
 
     specify do
-      @inject1.generate(:foo, [[:inner, 'abc']]).should == 'abc'
+      @inject1.generate(Apodidae::Edge.new(:foo), [[Apodidae::Edge.new(:inner), 'abc']]).should == 'abc'
     end
 
     specify do
-      @inject2.generate(:foo, [[:inner, 'abc']]).should == <<-EOS
+      @inject2.generate(Apodidae::Edge.new(:foo), [[Apodidae::Edge.new(:inner), 'abc']]).should == <<-EOS
         tag :span, 'abc'
       EOS
     end

@@ -6,7 +6,7 @@ describe Apodidae::Manager do
   shared_examples_for 'Manager' do
     describe '#initialize' do
       specify do
-        @manager.result.assoc(:foo).last.should be_equal_ignoring_spaces(<<-EOS)
+        @manager.result.find{|k, v| k.label == :foo}.last.should be_equal_ignoring_spaces(<<-EOS)
           tag(:div) { 'abc' }
         EOS
       end
@@ -27,7 +27,7 @@ describe Apodidae::Manager do
         describe "when tmp/output is specified" do
           it "output html to tmp/output/app/views/words/edit.html.erb" do
             target = "#{@output_dir1}/#{@relative_fname}"
-            @manager.write_to(:foo => target)
+            @manager.write_to(Apodidae::Edge.new(:foo) => target)
 
             File.read(target).should be_equal_ignoring_spaces <<-EOS
               tag(:div) { 'abc' }
@@ -40,7 +40,7 @@ describe Apodidae::Manager do
         describe "when tmp/output2 is specified" do
           it "output html to tmp/output2/app/views/words/edit.html.erb" do
             target = "#{@output_dir1}/#{@relative_fname}"
-            @manager.write_to(:foo => target)
+            @manager.write_to(Apodidae::Edge.new(:foo) => target)
 
             File.read(target).should be_equal_ignoring_spaces <<-EOS
               tag(:div) { 'abc' }
@@ -67,7 +67,7 @@ describe Apodidae::Manager do
           inner(:str1)
         end
       EOS
-      @manager.add_rachis(:inner => 'abc')
+      @manager.add_rachis(Apodidae::Edge.new(:inner) => 'abc')
       @manager.generate
     end
 

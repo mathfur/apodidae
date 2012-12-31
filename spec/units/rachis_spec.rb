@@ -3,12 +3,13 @@ require "spec_helper"
 
 shared_examples_for 'Rachis' do
   describe '#initialize' do
-    specify { subject.elems.should == {:html_id => 'foo_table'} }
+    specify { subject.elems.keys.should == [Apodidae::Edge.new(:html_id)] }
+    specify { subject.elems.values.should == ['foo_table'] }
   end
 
   describe '#[]' do
     it 'get one value of @elemes' do
-      subject[:html_id].should == 'foo_table'
+      subject[Apodidae::Edge.new(:html_id)].should == 'foo_table'
     end
   end
 end

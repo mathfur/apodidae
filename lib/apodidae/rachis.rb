@@ -6,7 +6,7 @@ module Apodidae
     def initialize(arg)
       case arg
       when Hash, Array
-        @elems = Hash[*(arg.map{|k, v| [k.to_sym, v]}).flatten]
+        @elems = Hash[*(arg.map{|k, v| [Edge.new(k.to_sym), v]}).flatten]
       when String
         sandbox = Sandbox.new
         sandbox.instance_eval(arg)
@@ -14,8 +14,8 @@ module Apodidae
       end
     end
 
-    def [](key)
-      @elems[key.to_sym]
+    def [](edge)
+      @elems.find{|k, v| k == edge}.try(:last)
     end
 
     class Sandbox
@@ -26,7 +26,7 @@ module Apodidae
       end
 
       def method_missing(name, *args)
-        @result[name.to_sym] = args.first
+        @result[Edge.new(name.to_sym)] = args.first
       end
     end
   end
