@@ -12,25 +12,25 @@ describe Apodidae::Prehtml::Sandbox do
             end
           end
         EOS
-        {
+        [{
           :tag => 'div',
           :attrs => {:class => 'foo', :id => 'bar'},
-          :inner => {
+          :inner => [{
             :tag => 'span',
             :attrs => {:class => 'foo2', :id => 'bar2'},
             :inner => 'baz'
-          }
-        }
+          }]
+        }]
       end
 
       specify do
         Apodidae::Prehtml.new(%Q!tag(:span, :'data-foo' => 123){'baz'}!).value.
-          should == {:tag => 'span', :attrs => {:'data-foo' => 123}, :inner => 'baz'}
+          should == [{:tag => 'span', :attrs => {:'data-foo' => 123}, :inner => 'baz'}]
       end
 
       specify do
         Apodidae::Prehtml.new(%Q!tag(:br)!).value.
-        should == {:tag => 'br', :attrs => {}, :inner => nil}
+        should == [{:tag => 'br', :attrs => {}, :inner => nil}]
       end
 
       describe "tag name include not alphanum character" do
@@ -48,20 +48,20 @@ describe Apodidae::Prehtml::Sandbox do
 
     specify do
       @sandbox.instance_variable_set(:@value,
-        {:tag => 'span', :attrs => {:class => 'foo2', :id => 'bar2'}, :inner => 'baz'})
+        [{:tag => 'span', :attrs => {:class => 'foo2', :id => 'bar2'}, :inner => 'baz'}])
       @sandbox.to_html.should == %Q!<span class="foo2" id="bar2">baz</span>!
     end
 
     specify do
       @sandbox.instance_variable_set(:@value,
-        {:tag => 'span', :attrs => {:class => 'foo"'}})
+        [{:tag => 'span', :attrs => {:class => 'foo"'}}])
       @sandbox.to_html.should == %Q!<span class="foo\\""></span>!
     end
 
     describe 'flat option is on' do
       it "return 1 line string" do
         @sandbox.instance_variable_set(:@value,
-           {:tag => 'span', :attrs => {:class => 'foo"'}})
+           [{:tag => 'span', :attrs => {:class => 'foo"'}}])
         @sandbox.to_html.should == %Q!<span class="foo\\""></span>!
       end
     end
@@ -69,29 +69,23 @@ describe Apodidae::Prehtml::Sandbox do
     describe 'flat option is off' do
       it "return multiple line string" do
         @sandbox.instance_variable_set(:@value,
-          {:tag => 'span', :attrs => {:class => 'foo"'}, :inner => 'baz'})
-        @sandbox.to_html(:multiline => true).should be_equal_ignoring_spaces <<-EOS
-        <span class="foo\\"">
-          baz
-        </span>
-        EOS
+          [{:tag => 'span', :attrs => {:class => 'foo"'}, :inner => 'baz'}])
+        @sandbox.to_html(:multiline => true).should be_equal_ignoring_spaces %Q!<span class="foo\\"">baz</span>!
       end
 
       it "return multiple line string with layered tag" do
-        @sandbox.instance_variable_set(:@value, {
+        @sandbox.instance_variable_set(:@value, [{
           :tag => 'span',
           :attrs => {:class => 'foo"'},
-          :inner => {
+          :inner => [{
             :tag => 'div',
             :attrs => {},
             :inner => 'baz'
-          }
-        })
+          }]
+        }])
         @sandbox.to_html(:multiline => true).should be_equal_ignoring_spaces <<-EOS
         <span class="foo\\"">
-          <div>
-            baz
-          </div>
+          <div>baz</div>
         </span>
         EOS
       end
@@ -112,5 +106,37 @@ describe Apodidae::Prehtml do
     end
 
     it "innerがnilの場合とそうでない場合"
+  end
+end
+
+describe do
+  subject do
+    Apodidae::Prehtml.new(<<-EOS)
+      tag(:table) do
+        tag(:tr) do
+          tag(:td) { 'Suzuki' }
+          tag(:td) { 'suzuki@gmail.com' }
+        end
+        tag(:tr) do
+          tag(:td) { 'Sato' }
+          tag(:td) { 'sato@gmail.com' }
+        end
+      end
+    EOS
+  end
+
+  specify do
+    subject.to_html(multiline: true).should be_equal_ignoring_spaces(<<-EOS)
+      <table>
+        <tr>
+          <td>Suzuki</td>
+          <td>suzuki@gmail.com</td>
+        </tr>
+        <tr>
+          <td>Sato</td>
+          <td>sato@gmail.com</td>
+        </tr>
+      </table>
+    EOS
   end
 end

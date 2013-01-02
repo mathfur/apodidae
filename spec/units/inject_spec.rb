@@ -58,4 +58,36 @@ describe Apodidae::Inject do
       EOS
     end
   end
+
+  describe 'use barb like rachis' do
+    before do
+      @barb1 = Apodidae::Barb.new('like_rachis', <<-EOS)
+      #-->> output_to Edge.new(:output) do
+        <div>abc</div>
+      #-->> end
+      EOS
+
+      @barb2 = Apodidae::Barb.new('foo', <<-EOS)
+      #-->> gsub_by('STRING' => Edge.new(:inner)) do
+      #-->> output_to Edge.new(:output) do
+        tag(:body){ 'STRING' }
+      #-->> end
+      #-->> end
+      EOS
+
+      @inject1 = Apodidae::Inject.new(@barb1, nil, [])
+      @inject2 = Apodidae::Inject.new(@barb2, nil, [[Apodidae::Edge.new(:inner), Apodidae::Edge.new(:output), @inject1]])
+    end
+
+    specify do
+      @inject1.generate(Apodidae::Edge.new(:output), [[]]).should be_equal_ignoring_spaces '<div>abc</div>'
+    end
+
+    specify do
+      @inject2.generate(Apodidae::Edge.new(:output), [[]]).should == <<-EOS
+        tag(:body){ '        <div>abc</div>
+' }
+      EOS
+    end
+  end
 end

@@ -27,3 +27,48 @@ describe Apodidae::Rachis do
 
   it_should_behave_like 'Rachis'
 end
+
+describe '' do
+  subject do
+    Apodidae::Rachis.new(<<-EOS)
+      group :user_data do
+        label '氏名', 'メールアドレス', '年齢'
+        row 'Suzuki', 'suzuki@gmail.com', '29'
+        row 'Sato',   'sato@gmail.com',   '30'
+      end
+    EOS
+  end
+
+  specify do
+    subject[Apodidae::Edge.new(:user_data)].should == [
+      [:label, '氏名',   'メールアドレス', '年齢'],
+      [:row,   'Suzuki', 'suzuki@gmail.com', '29'],
+      [:row,   'Sato',   'sato@gmail.com',   '30']
+    ]
+  end
+end
+
+describe do
+  subject do
+    Apodidae::Rachis.new(<<-EOS)
+      group :user_data2, :labels => [:label, :statement, :width], :need_name => true do
+        name '氏名', 'row.name', 150
+        age  '年齢', 'row.age',  80
+      end
+    EOS
+  end
+
+  specify do
+    subject[Apodidae::Edge.new(:user_data2)][0].should be_same_hash(
+      {:name => :name, :label => '氏名', :statement => 'row.name', :width => 150})
+    subject[Apodidae::Edge.new(:user_data2)][1].should be_same_hash(
+      {:name => :age,  :label => '年齢', :statement => 'row.age',  :width => 80})
+  end
+end
+
+describe do
+  specify do
+    Apodidae::Rachis.new(
+      [[Apodidae::Edge.new(:str1), 'abc']])[Apodidae::Edge.new(:str1)].should == 'abc'
+  end
+end

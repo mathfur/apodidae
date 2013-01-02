@@ -18,16 +18,20 @@ module Apodidae
     class Sandbox
       attr_reader :value
 
+      def initialize
+        @value = []
+      end
+
       def tag(name, attrs={}, &block)
         raise ArgumentError, "tag name #{name.inspect} must consist of alphanum" unless name =~ /^[a-zA-Z0-9]+$/
         if block_given?
           sandbox = Sandbox.new
           eval_return = sandbox.instance_eval(&block)
-          inner = sandbox.value || eval_return
+          inner = sandbox.value.present_or eval_return
         else
           inner = attrs[:inner]
         end
-        @value = {:tag => name.to_s, :attrs => attrs, :inner => inner}
+        @value << {:tag => name.to_s, :attrs => attrs, :inner => inner}
       end
 
       def to_html(opt={})
@@ -41,20 +45,26 @@ module Apodidae
         module_function :escape
 
         def to_html(value, multiline)
-          tag = value[:tag]
-          attrs = value[:attrs].map{|k, v| %Q!#{k}="#{Helper.escape(v)}"!}.join(' ')
-          inner = value[:inner]
+          arr = value.map{|hash| tag_hash_to_html(hash, multiline)}
+          multiline ? arr.join("\n") : arr.join('')
+        end
+        module_function :to_html
+
+        def tag_hash_to_html(tag_hash, multiline)
+          tag = tag_hash[:tag]
+          attrs = tag_hash[:attrs].map{|k, v| %Q!#{k}="#{Helper.escape(v)}"!}.join(' ')
+          inner = tag_hash[:inner]
           htmled_inner = case inner
                          when String
+                           multiline = false
                            inner
-                         when Hash
+                         when Array
                            Helper.to_html(inner, multiline)
                          when NilClass, FalseClass
                            nil
                          else
-                           raise ArgumentError
+                           raise ArgumentError, "#{inner.inspect} must be String, Array, nil or false."
                          end
-
           arr = [
             "<#{tag}#{attrs.blank? ? '' : ' '+attrs}>",
             multiline ? indent_each_line(htmled_inner) : htmled_inner,
@@ -63,7 +73,7 @@ module Apodidae
 
           multiline ?  arr.join("\n") : arr.join('')
         end
-        module_function :to_html
+        module_function :tag_hash_to_html
 
         def indent_each_line(str,opt={})
           indent_size = opt[:indent_size] || 2

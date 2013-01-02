@@ -17,4 +17,8 @@ class Object
 
     self
   end
+
+  def present_or(obj)
+    self.present? ? self : obj
+  end
 end

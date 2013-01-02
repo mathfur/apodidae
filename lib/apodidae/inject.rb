@@ -25,18 +25,18 @@ module Apodidae
       (self.injects == another_inject.injects)
     end
 
-    def generate(wanted_edge, rachis=nil)
+    def generate(wanted_edge, rachis_elems=nil)
       raise ArgumentError, "#{wanted_edge.inspect} is not Edge instance" unless wanted_edge.kind_of?(Edge)
 
       if @barb_or_rachis.kind_of?(Barb)
-        generated_inject_pairs = self.injects.map{|e, wanted_edge, inject| [e, inject.generate(wanted_edge, rachis)]}
+        generated_inject_pairs = self.injects.map{|e, wanted_edge, inject| [e, inject.generate(wanted_edge, rachis_elems)]}
 
         # 現在のbarbに入力する
         self.barb.evaluate(wanted_edge, generated_inject_pairs)
       else
-        edge_and_value = rachis
+        edge_and_value = rachis_elems
           .find{|k, v| k.label.to_sym == @barb_or_rachis.to_s.to_sym} or
-            raise "The keys of rachis `#{rachis.inspect}` don't have `#{@barb_or_rachis.to_s}`"
+            raise "The keys of rachis_elems `#{rachis_elems.inspect}` don't have `#{@barb_or_rachis.to_s}`"
         edge_and_value.try(:last)
       end
     end
