@@ -1,0 +1,4 @@
+group :user_data, :labels => ['氏名', 'メールアドレス', '年齢'] do
+  row 'Suzuki', 'suzuki@gmail.com', '29'
+  row 'Sato',   'sato@gmail.com',   '30'
+end
