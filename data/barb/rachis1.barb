@@ -1,0 +1,6 @@
+#-->> output_to Edge.new(:user_data) do
+  [
+    {:name => 'Suzuki', :mail => 'suzuki@gmail.com', :age => 29},
+    {:name => 'Sato', :mail => 'sato@gmail.com', :age => 30},
+  ]
+#-->> end

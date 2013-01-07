@@ -1,0 +1,5 @@
+#-->> gsub_by('Prehtml_src' => Edge.new(:input, :prehtml)) do
+#-->> output_to Edge.new(:output, :html) do
+#--==   Prehtml.new(Prehtml_src).to_html
+#-->> end
+#-->> end

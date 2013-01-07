@@ -1,0 +1,11 @@
+#-->> output_to Edge.new(:prehtml) do
+tag(:table) do
+  #-->> loop_by(['__i__', 'row'] => Edge.new(:input, [:range, {:html => :html}])) do
+  tag(:tr) do
+    #-->> loop_by(['name', 'Suzuki'] => Edge.new(nil, nil)) do
+    tag(:td) { 'Suzuki' }
+    #-->> end
+  end
+  #-->> end
+end
+#-->> end
