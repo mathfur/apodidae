@@ -9,7 +9,7 @@ describe Apodidae::Connection do
   describe '#initialize' do
     before do
       @barb = Apodidae::Barb.new('sample_barb', <<-EOS)
-        #-->> gsub_by('value' => Edge.new(:inner)) do
+        #-->> gsub_by(Edge.new(:inner) => 'value') do
         #-->> output_to Edge.new(:foo) do
           tag(:div) { 'value' }
         #-->> end
@@ -17,7 +17,7 @@ describe Apodidae::Connection do
       EOS
 
       @barb2 = Apodidae::Barb.new('convert_to_html', <<-EOS)
-        #-->> gsub_by('Prehtml_src' => Edge.new(:input, :prehtml)) do
+        #-->> gsub_by(Edge.new(:input, :prehtml) => 'Prehtml_src') do
         #-->> output_to Edge.new(:baz, :html) do
         #--==   Prehtml.new(Prehtml_src).to_html
         #-->> end
@@ -84,13 +84,13 @@ describe Apodidae::Connection do
         #-->> output_to Edge.new(:output_html) do
         tag(:table) do
           tag(:tr) do
-            #-->> loop_by(['label'] => Edge.new("collection_of_label_value_pairs.first.keys")) do
+            #-->> loop_by(Edge.new("collection_of_label_value_pairs.first.keys") => ['label']) do
             tag(:th) { 'label' }
             #-->> end
           end
-          #-->> loop_by(['label_value_pairs'] => Edge.new(:collection_of_label_value_pairs, [:range, {:html => :html}])) do
+          #-->> loop_by(Edge.new(:collection_of_label_value_pairs, [:range, {:html => :html}]) => ['label_value_pairs']) do
           tag(:tr) do
-            #-->> loop_by(['label', 'value'] => Edge.new(:label_value_pairs)) do
+            #-->> loop_by(Edge.new(:label_value_pairs) => ['label', 'value']) do
             tag(:td) { 'value' }
             #-->> end
           end
@@ -100,7 +100,7 @@ describe Apodidae::Connection do
       EOS
 
       @conv_barb = Apodidae::Barb.new("convert_to_html",<<-EOS)
-        #-->> gsub_by('Prehtml_src' => Edge.new(:input, :prehtml)) do
+        #-->> gsub_by(Edge.new(:input, :prehtml) => 'Prehtml_src') do
         #-->> output_to Edge.new(:output, :html) do
         #--==   Prehtml.new(Prehtml_src).to_html(multiline: true)
         #-->> end

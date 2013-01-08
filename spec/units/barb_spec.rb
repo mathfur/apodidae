@@ -4,7 +4,7 @@ require "spec_helper"
 describe Apodidae::Barb do
   describe do
     subject { Apodidae::Barb.new('foo',<<-EOS) }
-        #-->> gsub_by('hello' => Edge.new(:inner_div)) do
+        #-->> gsub_by(Edge.new(:inner_div) => 'hello') do
         #-->> output_to Edge.new(nil) do
           tag(:div) { 'hello' }
         #-->> end
@@ -33,7 +33,7 @@ describe Apodidae::Barb do
   describe 'simple statement' do
     subject do
       Apodidae::Barb.new(:foo, <<-INPUT)
-        #-->> gsub_by('hello' => Edge.new(:inner_div)) do
+        #-->> gsub_by(Edge.new(:inner_div) => 'hello') do
         #-->> output_to Edge.new(:foo) do
           tag(:div) { 'hello' }
         #-->> end
@@ -43,7 +43,7 @@ describe Apodidae::Barb do
 
     specify do
       subject.erbed_contents.should == <<-OUTPUT
-        <%- gsub_by('hello' => Edge.new(:inner_div)) do -%>
+        <%- gsub_by(Edge.new(:inner_div) => 'hello') do -%>
         <%- if Edge.new(:foo) == edge -%>
           tag(:div) { '<%= inner_div %>' }
         <%- end -%>
@@ -64,13 +64,13 @@ describe Apodidae::Barb do
   describe '2 output_to' do
     subject do
       Apodidae::Barb.new(:foo, <<-INPUT)
-        #-->> gsub_by('hello' => Edge.new(:inner_div)) do
+        #-->> gsub_by(Edge.new(:inner_div) => 'hello') do
         #-->> output_to Edge.new(:foo) do
           tag(:div) { 'hello' }
         #-->> end
         #-->> end
 
-        #-->> gsub_by('hello2' => Edge.new(:inner_div2)) do
+        #-->> gsub_by(Edge.new(:inner_div2) => 'hello2') do
         #-->> output_to Edge.new(:bar) do
           tag(:span) { 'hello2' }
         #-->> end
@@ -80,13 +80,13 @@ describe Apodidae::Barb do
 
     specify do
       subject.erbed_contents.should == <<-OUTPUT
-        <%- gsub_by('hello' => Edge.new(:inner_div)) do -%>
+        <%- gsub_by(Edge.new(:inner_div) => 'hello') do -%>
         <%- if Edge.new(:foo) == edge -%>
           tag(:div) { '<%= inner_div %>' }
         <%- end -%>
         <%- end -%>
 
-        <%- gsub_by('hello2' => Edge.new(:inner_div2)) do -%>
+        <%- gsub_by(Edge.new(:inner_div2) => 'hello2') do -%>
         <%- if Edge.new(:bar) == edge -%>
           tag(:span) { '<%= inner_div2 %>' }
         <%- end -%>
@@ -113,7 +113,7 @@ describe Apodidae::Barb do
 
   describe do
     subject { Apodidae::Barb.new('foo',<<-EOS) }
-        #-->> gsub_by('x' => Edge.new(:eight, [:integer])) do
+        #-->> gsub_by(Edge.new(:eight, [:integer]) => 'x') do
         #-->> output_to Edge.new(:nine, [:integer]) do
         #--==   1+x
         #-->> end
@@ -122,7 +122,7 @@ describe Apodidae::Barb do
 
     specify do
       subject.erbed_contents.should == <<-OUTPUT
-        <%- gsub_by('x' => Edge.new(:eight, [:integer])) do -%>
+        <%- gsub_by(Edge.new(:eight, [:integer]) => 'x') do -%>
         <%- if Edge.new(:nine, [:integer]) == edge -%>
         <%=   1+eight %>
         <%- end -%>
@@ -144,7 +144,7 @@ describe Apodidae::Barb do
   describe 'convert to html' do
     subject do
       Apodidae::Barb.new('convert_to_html', <<-EOS)
-        #-->> gsub_by('Prehtml_src' => Edge.new(:input, [:prehtml])) do
+        #-->> gsub_by(Edge.new(:input, [:prehtml]) => 'Prehtml_src') do
         #-->> output_to Edge.new(:foo, :html) do
         #--==   Prehtml.new(Prehtml_src).to_html
         #-->> end
@@ -154,7 +154,7 @@ describe Apodidae::Barb do
 
     specify do
       subject.erbed_contents.should == <<-OUTPUT
-        <%- gsub_by('Prehtml_src' => Edge.new(:input, [:prehtml])) do -%>
+        <%- gsub_by(Edge.new(:input, [:prehtml]) => 'Prehtml_src') do -%>
         <%- if Edge.new(:foo, :html) == edge -%>
         <%=   Prehtml.new(input).to_html %>
         <%- end -%>
@@ -181,7 +181,7 @@ describe Apodidae::Barb do
     subject do
       Apodidae::Barb.new(:foo, <<-INPUT)
         #-->> output_to Edge.new(:output) do
-        #-->> loop_by(['WORD', 'MEANING'] => Edge.new(:input, {:str => :html})) do
+        #-->> loop_by(Edge.new(:input, {:str => :html}) => ['WORD', 'MEANING']) do
         tag(:dl) do
           tag(:dt) { 'WORD' }
           tag(:dd) { 'MEANING' }
@@ -229,9 +229,9 @@ describe Apodidae::Barb do
       Apodidae::Barb.new(:foo, <<-INPUT)
         #-->> output_to Edge.new(:output) do
         tag(:table) do
-          #-->> loop_by(['row', '__i__'] => Edge.new(:input, [:range, {:html => :html}])) do
+          #-->> loop_by(Edge.new(:input, [:range,{:html => :html}]) => ['row', '__i__']) do
           tag(:tr) do
-            #-->> loop_by(['name', 'Suzuki'] => Edge.new(:row)) do
+            #-->> loop_by(Edge.new(:row) => ['name', 'Suzuki']) do
             tag(:td) { 'Suzuki' }
             #-->> end
           end
@@ -290,7 +290,7 @@ describe Apodidae::Barb do
     subject do
       Apodidae::Barb.new(:foo, <<-INPUT)
         #-->> output_to Edge.new(:output) do
-        #-->> loop_by(['WORD', 'MEANING'] => Edge.new("input{|e| e.merge('abc'=>'def') }", {:str => :html})) do
+        #-->> loop_by(Edge.new("input{|e| e.merge('abc' => 'def') }",{:str => :html}) => ['WORD', 'MEANING']) do
         tag(:dl) do
           tag(:dt) { 'WORD.{|e| e.upcase }' }
           tag(:dd) { 'MEANING' }
@@ -303,7 +303,7 @@ describe Apodidae::Barb do
     specify do
       subject.erbed_contents.should == <<-OUTPUT
         <%- if Edge.new(:output) == edge -%>
-        <%- proc{|e| e.merge('abc'=>'def') }[input].each_with_index do |(k0_0_0, k0_0_1), i0| -%>
+        <%- proc{|e| e.merge('abc' => 'def') }[input].each_with_index do |(k0_0_0, k0_0_1), i0| -%>
         tag(:dl) do
           tag(:dt) { '<%= proc{|e| e.upcase }[k0_0_0] %>' }
           tag(:dd) { '<%= k0_0_1 %>' }

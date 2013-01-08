@@ -11,7 +11,7 @@ describe Apodidae::Inject do
   describe 'simple statement' do
     before do
       @barb = Apodidae::Barb.new('foo', <<-EOS)
-      #-->> gsub_by('hello' => Edge.new(:inner)) do
+      #-->> gsub_by(Edge.new(:inner) => 'hello') do
       #-->> output_to Edge.new(:foo) do
         tag :span, 'hello'
       #-->> end
@@ -36,7 +36,7 @@ describe Apodidae::Inject do
   describe 'convert to html' do
     before do
       @barb = Apodidae::Barb.new('convert_to_html', <<-EOS)
-        #-->> gsub_by('Prehtml_src' => Edge.new(:input, :prehtml)) do
+        #-->> gsub_by(Edge.new(:input, :prehtml) => 'Prehtml_src') do
         #-->> output_to Edge.new(:foo, :html) do
         #--==   Prehtml.new(Prehtml_src).to_html
         #-->> end
@@ -68,7 +68,7 @@ describe Apodidae::Inject do
       EOS
 
       @barb2 = Apodidae::Barb.new('foo', <<-EOS)
-      #-->> gsub_by('STRING' => Edge.new(:inner)) do
+      #-->> gsub_by(Edge.new(:inner) => 'STRING') do
       #-->> output_to Edge.new(:output) do
         tag(:body){ 'STRING' }
       #-->> end

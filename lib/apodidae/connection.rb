@@ -11,8 +11,7 @@ module Apodidae
     def generate(edge_in, rachis)
       rachis = rachis.kind_of?(Rachis) ? rachis.elems : rachis
 
-      edge_and_inject = self.injects.find{|ein, eout, inject| ein == edge_in} or raise "`#{edge_in.inspect}` is not found in #{self.injects.map(&:first).inspect}"
-      _, edge_out, inject = edge_and_inject
+      (_, edge_out, inject = self.injects.find{|ein, eout, inject| ein == edge_in}) or raise "`#{edge_in.inspect}` is not found in #{self.injects.map(&:first).inspect}"
       inject.try(:generate, edge_out, rachis)
     end
 

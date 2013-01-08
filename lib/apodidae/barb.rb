@@ -74,7 +74,7 @@ module Apodidae
           "#$1<%- end -%>"
         when /^(\s*)#--==( *)(.*)$/
           line = "#$1<%=#$2#{ $3.rstrip } %>"
-          context.each do |k, edge|
+          context.each do |edge, k|
             line = line.gsub(/(?<replace_target>#{k})\{(?<rear>[^\}]*)\}/){ "proc{#{$~[:rear]}}[#{$~[:replace_target]}]" }
             line = line.gsub(/(?<replace_target>#{k})\.(?<rear>[a-zA-Z0-9\.]*)/){ "#{$~[:replace_target]}.#{$~[:rear]}" }
             line = line.gsub(k){ edge.label }
@@ -83,7 +83,7 @@ module Apodidae
         when /^(\s*)#-->>/
           raise ArgumentError
         else
-          context.each do |k, edge|
+          context.each do |edge, k|
             replaced_str = edge.kind_of?(Edge) ? edge.label : edge
             line = line.gsub(/(?<replace_target>#{k})\.\{(?<rear>[^\}]*)\}/){ "<%= proc{#{$~[:rear]}}[#{replaced_str}] %>" }
             line = line.gsub(/(?<replace_target>#{k})\.(?<rear>[a-zA-Z0-9\.]*)/){ "<%= #{replaced_str}.#{$~[:rear]} %>" }
@@ -162,12 +162,12 @@ module Apodidae
       end
 
       def find_from_before(edge)
-        flat_value.reverse.find{|before, after| before.to_s == edge.label.to_s}.try(:last)
+        flat_value.reverse.find{|after, before| before.to_s == edge.label.to_s}.try(:first)
       end
 
       def each(&block)
-        flat_value.each do |k, edge|
-          block.call(k, edge)
+        flat_value.each do |edge, k|
+          block.call(edge, k)
         end
       end
 
@@ -177,7 +177,7 @@ module Apodidae
 
       private
       def first_label
-        flat_value.first.last
+        flat_value.first.first
       end
 
       def flat_value
@@ -197,7 +197,7 @@ module Apodidae
       end
 
       def edges
-        @pairs.values
+        @pairs.keys
       end
 
       def open_edges(context)
@@ -205,19 +205,19 @@ module Apodidae
       end
 
       def keys
-        @pairs.keys.flatten
+        @pairs.values.flatten
       end
 
       def key_label_pairs(prefix)
         result = []
-        @pairs.each_with_index do |(ks, edge), i|
-          result += ks.map.each_with_index{|k, j| [k, "k#{prefix}_#{i}_#{j}"] }
+        @pairs.each_with_index do |(edge, ks), i|
+          result += ks.map.each_with_index{|k, j| ["k#{prefix}_#{i}_#{j}", k] }
         end
         result
       end
 
       def arg_items(prefix)
-        self.key_label_pairs(prefix).map(&:last)
+        self.key_label_pairs(prefix).map(&:first)
       end
     end
   end

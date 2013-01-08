@@ -35,7 +35,7 @@ module Apodidae
         self.barb.evaluate(wanted_edge, generated_inject_pairs)
       else
         edge_and_value = rachis_elems
-          .find{|k, v| k.label.to_sym == @barb_or_rachis.to_s.to_sym} or
+          .find{|e, v| e.label.to_sym == @barb_or_rachis.to_s.to_sym} or
             raise "The keys of rachis_elems `#{rachis_elems.inspect}` don't have `#{@barb_or_rachis.to_s}`"
         edge_and_value.try(:last)
       end

@@ -54,7 +54,7 @@ EOS
           Dir.mktmpdir do |connection_dir|
             Dir.mktmpdir do |rachis_dir|
               open("#{barb_dir}/sample_barb.barb", 'w'){|f| f.write(<<-EOS) }
-                #-->> gsub_by('hello' => Edge.new(:inner)) do
+                #-->> gsub_by(Edge.new(:inner) => 'hello') do
                 #-->> output_to Edge.new(:foo) do
                   tag(:div) { 'hello' }
                 #-->> end
@@ -62,7 +62,7 @@ EOS
               EOS
 
               open("#{barb_dir}/convert_to_html.barb", 'w'){|f| f.write(<<-EOS) }
-                #-->> gsub_by('Prehtml_src' => Edge.new(:input, :prehtml)) do
+                #-->> gsub_by(Edge.new(:input, :prehtml) => 'Prehtml_src') do
                 #-->> output_to Edge.new(:baz, :html) do
                 #--==   Prehtml.new(Prehtml_src).to_html
                 #-->> end

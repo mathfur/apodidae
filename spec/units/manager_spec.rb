@@ -59,7 +59,7 @@ describe Apodidae::Manager do
     before do
       @manager = Apodidae::Manager.new
       @manager.add_barb_from_string(:sample_barb, <<-EOS)
-        #-->> gsub_by('hello' => Edge.new(:inner)) do
+        #-->> gsub_by(Edge.new(:inner) => 'hello') do
         #-->> output_to Edge.new(:foo) do
           tag(:div) { 'hello' }
         #-->> end
@@ -84,7 +84,7 @@ describe Apodidae::Manager do
 
       Dir.mktmpdir do |tempdir|
         open("#{tempdir}/sample_barb.barb", 'w'){|f| f.write <<-EOS }
-          #-->> gsub_by('hello' => Edge.new(:inner)) do
+          #-->> gsub_by(Edge.new(:inner) => 'hello') do
           #-->> output_to Edge.new(:foo) do
             tag(:div) { 'hello' }
           #-->> end
