@@ -336,4 +336,83 @@ describe Apodidae::Barb do
     specify { subject.right_edges.first.label.should == :input }
     specify { subject.right_edges.first.type.should == [{:str => :html}] }
   end
+
+  describe 'table with rb_block' do
+    subject do
+      Apodidae::Barb.new(:table_with_rb_block, <<-EOS)
+        #-->> output_to Edge.new(:output) do
+        tag(:table) do
+          #-->> gsub_by(Edge.new(:instance_name) => 'user_', Edge.new("instance_name.pluralize") => 'users') do
+          rb_block("@users.each", "user_") do
+            tag(:tr) do
+              #-->> loop_by(Edge.new("hashs") => ['column']) do
+              tag(:th){ 'column.{|e| e[:label] }' }
+              #-->> end
+            end
+            tag(:tr) do
+              #-->> loop_by(Edge.new("hashs") => ['row']) do
+              tag(:td, :width => row.{|e| e[:width] }){ row.{|e| e[:rb_statement] } }
+              #-->> end
+            end
+          end
+          #-->> end
+        end
+        #-->> end
+      EOS
+    end
+
+    specify do
+      pending "上記row.{|e| .. の部分は#72対応後にrow:のように修正する"
+    end
+
+    specify do
+      subject.erbed_contents.should be_equal_ignoring_spaces <<-EOS
+        <%- if Edge.new(:output) == edge -%>
+        tag(:table) do
+          <%- gsub_by(Edge.new(:instance_name) => 'user_', Edge.new("instance_name.pluralize") => 'users') do -%>
+          rb_block("@<%= proc{|e| e.pluralize }[instance_name] %>.each", "<%= instance_name %>") do
+            tag(:tr) do
+              <%- hashs.each_with_index do |(k1_0_0), i1| -%>
+              tag(:th){ '<%= proc{|e| e[:label] }[k1_0_0] %>' }
+              <%- end -%>
+            end
+            tag(:tr) do
+              <%- hashs.each_with_index do |(k1_0_0), i1| -%>
+              tag(:td, :width => <%= proc{|e| e[:width] }[k1_0_0] %>){ <%= proc{|e| e[:rb_statement] }[k1_0_0] %> }
+              <%- end -%>
+            end
+          end
+          <%- end -%>
+        end
+        <%- end -%>
+      EOS
+    end
+
+    specify do
+      subject.evaluate(Apodidae::Edge.new(:output), [
+        [Apodidae::Edge.new(:instance_name), 'entry'],
+        [Apodidae::Edge.new(:hashs), [
+          {:label => 'タイトル', :rb_statement => %Q!rb("entry.title")!,    :width => 200},
+          {:label => 'カテゴリ', :rb_statement => %Q!rb("entry.category")!, :width => 100},
+        ]]
+      ]).should be_equal_ignoring_spaces <<-EOS
+        tag(:table) do
+          rb_block("@entries.each", "entry") do
+            tag(:tr) do
+              tag(:th){ 'タイトル' }
+              tag(:th){ 'カテゴリ' }
+            end
+            tag(:tr) do
+              tag(:td, :width => 200){ rb("entry.title") }
+              tag(:td, :width => 100){ rb("entry.category") }
+            end
+          end
+        end
+      EOS
+    end
+
+    specify do
+      pending "上記:rb_statements => %Q!rb(..の部分は#70対応後に修正する"
+    end
+  end
 end

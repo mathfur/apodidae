@@ -21,8 +21,8 @@ RSpec::Matchers.define :be_equal_ignoring_spaces do |expect|
 
   failure_message_for_should do |actual|
     [
-      "actual: #{@actual.inspect}",
-      "expect: #{@expect.inspect}",
+      "actual: ================\n#{@actual}",
+      "expect: ================\n#{@expect}",
     ].join("\n")
   end
 end

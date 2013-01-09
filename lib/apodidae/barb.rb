@@ -45,7 +45,7 @@ module Apodidae
         when /^(\s*)#-->>\s*(output_to\(?\s*(.*)\)?\s*do\s*)$/
           @left_edges << eval($3)
           "#$1<%- if #{ $3.rstrip } == edge -%>"
-        when /^(?<sp>\s*)#-->>\s*(?<statement>gsub_by\(\s*\{?(?<replacement>.*)\}?\s*\) do\s*)$/
+        when /^(?<sp>\s*)#-->>\s*(?<statement>gsub_by\(\s*\{?(?<replacement>.*)\}?\s*\)\s*do\s*)$/
           statement = $~[:statement]
           replacement = Replacement.new("{#{$~[:replacement]}}")
           sp = $~[:sp]
@@ -76,18 +76,28 @@ module Apodidae
           line = "#$1<%=#$2#{ $3.rstrip } %>"
           context.each do |edge, k|
             line = line.gsub(/(?<replace_target>#{k})\{(?<rear>[^\}]*)\}/){ "proc{#{$~[:rear]}}[#{$~[:replace_target]}]" }
-            line = line.gsub(/(?<replace_target>#{k})\.(?<rear>[a-zA-Z0-9\.]*)/){ "#{$~[:replace_target]}.#{$~[:rear]}" }
+            line = line.gsub(/(?<replace_target>#{k})\.\.\.(?<rear>[a-zA-Z0-9_\.]*)/){ "#{$~[:replace_target]}.#{$~[:rear]}" }
             line = line.gsub(k){ edge.label }
           end
           line.rstrip
+        when /^(?<sp>\s*)#-->>\s*gsub_by/
+          raise ArgumentError, "gsub_by statement #{line.inspect} is wrong."
         when /^(\s*)#-->>/
-          raise ArgumentError
+          raise ArgumentError, "#{line.inspect} is wrong line."
         else
           context.each do |edge, k|
-            replaced_str = edge.kind_of?(Edge) ? edge.label : edge
+            replaced_str = if edge.kind_of?(Edge)
+                             if edge.act_to_value
+                               "#{edge.act_to_value}[#{edge.label}]"
+                             else
+                               edge.label
+                             end
+                           else
+                             edge
+                           end
             line = line.gsub(/(?<replace_target>#{k})\.\{(?<rear>[^\}]*)\}/){ "<%= proc{#{$~[:rear]}}[#{replaced_str}] %>" }
-            line = line.gsub(/(?<replace_target>#{k})\.(?<rear>[a-zA-Z0-9\.]*)/){ "<%= #{replaced_str}.#{$~[:rear]} %>" }
-            line = line.gsub(/#{k}([^\.])/){ "<%= #{replaced_str} %>#{$1}" }
+            line = line.gsub(/(?<replace_target>#{k})\.\.\.(?<rear>[a-zA-Z0-9_\.]*)/){ "<%= #{replaced_str}.#{$~[:rear]} %>" }
+            line = line.gsub(/#{k}(?!\.\{\|\.\.\.)/){ "<%= #{replaced_str} %>#{$1}" }
           end
           line.rstrip
         end
@@ -189,7 +199,13 @@ module Apodidae
       attr_reader :pairs
 
       def initialize(pairs_str)
-        @pairs = eval(pairs_str)
+        pairs = eval(pairs_str)
+        raise "pairs `#{pairs.inspect}` is #{pairs.class}, but it must be Hash." unless pairs.kind_of?(Hash)
+
+        @pairs = {}
+        pairs.each do |edge, k|
+          @pairs[edge] = k
+        end
       end
 
       def size
