@@ -410,9 +410,5 @@ describe Apodidae::Barb do
         end
       EOS
     end
-
-    specify do
-      pending "上記:rb_statements => %Q!rb(..の部分は#70対応後に修正する"
-    end
   end
 end
