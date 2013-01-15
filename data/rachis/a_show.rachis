@@ -1,0 +1,2 @@
+instance_name 'entry'
+column %w{title contents}

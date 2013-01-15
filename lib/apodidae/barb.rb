@@ -44,6 +44,7 @@ module Apodidae
         case line
         when /^(\s*)#-->>\s*(output_to\(?\s*(.*)\)?\s*do\s*)$/
           @left_edges << eval($3)
+          context.push([])
           "#$1<%- if #{ $3.rstrip } == edge -%>"
         when /^(?<sp>\s*)#-->>\s*(?<statement>gsub_by\(\s*\{?(?<replacement>.*)\}?\s*\)\s*do\s*)$/
           statement = $~[:statement]
@@ -96,7 +97,7 @@ module Apodidae
                              edge
                            end
             line = line.gsub(/(?<replace_target>#{k})\.\{(?<rear>[^\}]*)\}/){ "<%= proc{#{$~[:rear]}}[#{replaced_str}] %>" }
-            line = line.gsub(/(?<replace_target>#{k})\.\.\.(?<rear>[a-zA-Z0-9_\.]*)/){ "<%= #{replaced_str}.#{$~[:rear]} %>" }
+            line = line.gsub(/(?<replace_target>#{k})(?<rear>\.\.\.[a-zA-Z0-9_]*)/){ "<%= #{replaced_str}#{$~[:rear].gsub(/\.\.\./, '.')} %>" }
             line = line.gsub(/#{k}(?!\.\{\|\.\.\.)/){ "<%= #{replaced_str} %>#{$1}" }
           end
           line.rstrip

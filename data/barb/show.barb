@@ -1,0 +1,30 @@
+#-->> gsub_by(Edge.new(:instance_name) => 'useR', Edge.new("instance_name.pluralize") => 'users') do
+  #-->> output_to Edge.new(:route) do
+  resources :users
+  #-->> end
+
+  #-->> output_to Edge.new(:controller) do
+  def show
+    @useR = useR...camelize.find(params[:id])
+
+    respond_to do |format|
+      format.html
+      format.json { render json: @useR }
+    end
+  end
+  #-->> end
+
+  #-->> output_to Edge.new(:view) do
+    tag(:p, :id=>"notice"){ rb("notice") }
+
+    #-->> loop_by(Edge.new(:column) => ['mail']) do
+    tag(:p) do
+      tag(:b){ "mail...camelize:" }
+      rb("@useR.mail")
+    end
+
+    #-->> end
+    rb("link_to 'Edit', edit_useR_path(@useR)")
+    rb("link_to 'Back', users_path")
+  #-->> end
+#-->> end

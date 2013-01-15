@@ -1,13 +1,13 @@
 #-->> output_to Edge.new(:output_html) do
 tag(:table) do
   tag(:tr) do
-    #-->> loop_by(['label'] => Edge.new("collection_of_label_value_pairs.first.keys")) do
+    #-->> loop_by(Edge.new("collection_of_label_value_pairs.first.keys") => ['label']) do
     tag(:th) { 'label' }
     #-->> end
   end
-  #-->> loop_by(['label_value_pairs'] => Edge.new(:collection_of_label_value_pairs, [:range, {:html => :html}])) do
+  #-->> loop_by(Edge.new(:collection_of_label_value_pairs, [:range, {:html => :html}]) => ['label_value_pairs']) do
   tag(:tr) do
-    #-->> loop_by(['label', 'value'] => Edge.new(:label_value_pairs)) do
+    #-->> loop_by(Edge.new(:label_value_pairs) => ['label', 'value']) do
     tag(:td) { 'value' }
     #-->> end
   end

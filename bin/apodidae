@@ -40,8 +40,9 @@ begin
     else
     end
   end
-rescue
-  puts ">>Exception"
+rescue RuntimeError => e
+  puts e.message
+  puts e.backtrace
   exit
 end
 

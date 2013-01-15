@@ -194,10 +194,10 @@ describe Apodidae::Barb do
     specify do
       subject.erbed_contents.should == <<-OUTPUT
         <%- if Edge.new(:output) == edge -%>
-        <%- input.each_with_index do |(k0_0_0, k0_0_1), i0| -%>
+        <%- input.each_with_index do |(k1_0_0, k1_0_1), i1| -%>
         tag(:dl) do
-          tag(:dt) { '<%= k0_0_0 %>' }
-          tag(:dd) { '<%= k0_0_1 %>' }
+          tag(:dt) { '<%= k1_0_0 %>' }
+          tag(:dd) { '<%= k1_0_1 %>' }
         end
         <%- end -%>
         <%- end -%>
@@ -245,10 +245,10 @@ describe Apodidae::Barb do
       subject.erbed_contents.should == <<-OUTPUT
         <%- if Edge.new(:output) == edge -%>
         tag(:table) do
-          <%- input.each_with_index do |(k0_0_0), i0| -%>
+          <%- input.each_with_index do |(k1_0_0), i1| -%>
           tag(:tr) do
-            <%- k0_0_0.each_with_index do |(k1_0_0, k1_0_1), i1| -%>
-            tag(:td) { '<%= k1_0_1 %>' }
+            <%- k1_0_0.each_with_index do |(k2_0_0, k2_0_1), i2| -%>
+            tag(:td) { '<%= k2_0_1 %>' }
             <%- end -%>
           end
           <%- end -%>
@@ -303,10 +303,10 @@ describe Apodidae::Barb do
     specify do
       subject.erbed_contents.should == <<-OUTPUT
         <%- if Edge.new(:output) == edge -%>
-        <%- proc{|e| e.merge('abc' => 'def') }[input].each_with_index do |(k0_0_0, k0_0_1), i0| -%>
+        <%- proc{|e| e.merge('abc' => 'def') }[input].each_with_index do |(k1_0_0, k1_0_1), i1| -%>
         tag(:dl) do
-          tag(:dt) { '<%= proc{|e| e.upcase }[k0_0_0] %>' }
-          tag(:dd) { '<%= k0_0_1 %>' }
+          tag(:dt) { '<%= proc{|e| e.upcase }[k1_0_0] %>' }
+          tag(:dd) { '<%= k1_0_1 %>' }
         end
         <%- end -%>
         <%- end -%>
@@ -372,13 +372,13 @@ describe Apodidae::Barb do
           <%- gsub_by(Edge.new(:instance_name) => 'user_', Edge.new("instance_name.pluralize") => 'users') do -%>
           rb_block("@<%= proc{|e| e.pluralize }[instance_name] %>.each", "<%= instance_name %>") do
             tag(:tr) do
-              <%- hashs.each_with_index do |(k1_0_0), i1| -%>
-              tag(:th){ '<%= proc{|e| e[:label] }[k1_0_0] %>' }
+              <%- hashs.each_with_index do |(k2_0_0), i2| -%>
+              tag(:th){ '<%= proc{|e| e[:label] }[k2_0_0] %>' }
               <%- end -%>
             end
             tag(:tr) do
-              <%- hashs.each_with_index do |(k1_0_0), i1| -%>
-              tag(:td, :width => <%= proc{|e| e[:width] }[k1_0_0] %>){ <%= proc{|e| e[:rb_statement] }[k1_0_0] %> }
+              <%- hashs.each_with_index do |(k2_0_0), i2| -%>
+              tag(:td, :width => <%= proc{|e| e[:width] }[k2_0_0] %>){ <%= proc{|e| e[:rb_statement] }[k2_0_0] %> }
               <%- end -%>
             end
           end
@@ -408,6 +408,121 @@ describe Apodidae::Barb do
             end
           end
         end
+      EOS
+    end
+  end
+
+  describe do
+    subject do
+      Apodidae::Barb.new(:show, <<-EOS)
+        #-->> gsub_by(Edge.new(:instance_name) => 'useR', Edge.new("instance_name.pluralize") => 'users') do
+          #-->> output_to Edge.new(:route) do
+          resources :users
+          #-->> end
+
+          #-->> output_to Edge.new(:controller) do
+          def show
+            @useR = useR...camelize.find(params[:id])
+
+            respond_to do |format|
+              format.html
+              format.json { render json: @useR }
+            end
+          end
+          #-->> end
+
+          #-->> output_to Edge.new(:view) do
+            tag(:p, :id=>"notice"){ rb("notice") }
+
+            #-->> loop_by(Edge.new(:column) => ['mail']) do
+            tag(:p) do
+              tag(:b){ "mail...camelize:" }
+              rb("@useR.mail")
+            end
+
+            #-->> end
+            rb("link_to 'Edit', edit_useR_path(@useR)")
+            rb("link_to 'Back', users_path")
+          #-->> end
+        #-->> end
+      EOS
+    end
+
+    specify do
+      subject.erbed_contents.should be_equal_ignoring_spaces <<-EOS
+        <%- gsub_by(Edge.new(:instance_name) => 'useR', Edge.new("instance_name.pluralize") => 'users') do -%>
+          <%- if Edge.new(:route) == edge -%>
+          resources :<%= proc{|e| e.pluralize }[instance_name] %>
+          <%- end -%>
+
+          <%- if Edge.new(:controller) == edge -%>
+          def show
+            @<%= instance_name %> = <%= instance_name.camelize %>.find(params[:id])
+
+            respond_to do |format|
+              format.html
+              format.json { render json: @<%= instance_name %> }
+            end
+          end
+          <%- end -%>
+
+          <%- if Edge.new(:view) == edge -%>
+            tag(:p, :id=>"notice"){ rb("notice") }
+
+            <%- column.each_with_index do |(k2_0_0), i2| -%>
+            tag(:p) do
+              tag(:b){ "<%= k2_0_0.camelize %>:" }
+              rb("@<%= instance_name %>.<%= k2_0_0 %>")
+            end
+
+            <%- end -%>
+            rb("link_to 'Edit', edit_<%= instance_name %>_path(@<%= instance_name %>)")
+            rb("link_to 'Back', <%= proc{|e| e.pluralize }[instance_name] %>_path")
+          <%- end -%>
+        <%- end -%>
+      EOS
+    end
+
+    specify do
+      subject.evaluate(Apodidae::Edge.new(:route), [
+        [Apodidae::Edge.new(:instance_name), 'entry'],
+        [Apodidae::Edge.new(:column), %w{title contents}],
+      ]).should be_equal_ignoring_spaces <<-EOS
+        resources :entries
+      EOS
+
+      subject.evaluate(Apodidae::Edge.new(:controller), [
+        [Apodidae::Edge.new(:instance_name), 'entry'],
+        [Apodidae::Edge.new(:column), %w{title contents}],
+      ]).should be_equal_ignoring_spaces <<-EOS
+        def show
+          @entry = Entry.find(params[:id])
+
+          respond_to do |format|
+            format.html
+            format.json { render json: @entry }
+          end
+        end
+      EOS
+
+      subject.evaluate(Apodidae::Edge.new(:view), [
+        [Apodidae::Edge.new(:instance_name), 'entry'],
+        [Apodidae::Edge.new(:column), %w{title contents}],
+      ]).should be_equal_ignoring_spaces <<-EOS
+        tag(:p, :id=>"notice"){ rb("notice") }
+
+        tag(:p) do
+          tag(:b){ "Title:" }
+          rb("@entry.title")
+        end
+
+        tag(:p) do
+          tag(:b){ "Contents:" }
+          rb("@entry.contents")
+        end
+
+        rb("link_to 'Edit', edit_entry_path(@entry)")
+        rb("link_to 'Back', entries_path")
       EOS
     end
   end
