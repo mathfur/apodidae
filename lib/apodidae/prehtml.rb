@@ -34,6 +34,22 @@ module Apodidae
         @value << {:tag => name.to_s, :attrs => attrs, :inner => inner}
       end
 
+      def rb(statement, args=nil, &block)
+        raise "If block is not given, then args must not be needed." if args and !block_given?
+
+        if block_given?
+          sandbox = Sandbox.new
+          eval_return = sandbox.instance_eval(&block)
+          inner = sandbox.value.present_or eval_return
+        else
+          inner = statement
+        end
+
+        attrs = block_given? ? {:statement => statement, :args => args} : {}
+        tag =   block_given? ? 'rb_block' : 'rb'
+        @value << {:tag => tag, :attrs => attrs, :inner => inner}
+      end
+
       def to_html(opt={})
         @value ? Helper.to_html(@value, opt[:multiline] || opt[:m]) : ''
       end
@@ -52,7 +68,10 @@ module Apodidae
 
         def tag_hash_to_html(tag_hash, multiline)
           tag = tag_hash[:tag]
-          attrs = tag_hash[:attrs].map{|k, v| %Q!#{k}="#{Helper.escape(v)}"!}.join(' ')
+          attrs = tag_hash[:attrs]
+          rb_statement = attrs.delete(:statement)
+          rb_args = attrs.delete(:args)
+          attrs = attrs.map{|k, v| %Q!#{k}="#{Helper.escape(v)}"!}.join(' ')
           inner = tag_hash[:inner]
           htmled_inner = case inner
                          when String
@@ -65,13 +84,24 @@ module Apodidae
                          else
                            raise ArgumentError, "#{inner.inspect} must be String, Array, nil or false."
                          end
-          arr = [
-            "<#{tag}#{attrs.blank? ? '' : ' '+attrs}>",
-            multiline ? indent_each_line(htmled_inner) : htmled_inner,
-            "</#{tag}>"
-          ].compact
+          before_join = case tag
+                        when 'rb'
+                          ["<%= #{inner} %>"]
+                        when 'rb_block'
+                          [
+                            "<% #{rb_statement} do |#{rb_args.join(', ')}| %>",
+                            multiline ? indent_each_line(htmled_inner) : htmled_inner,
+                            "<% end %>"
+                          ].compact
+                        else
+                          [
+                            "<#{tag}#{attrs.blank? ? '' : ' '+attrs}>",
+                            multiline ? indent_each_line(htmled_inner) : htmled_inner,
+                            "</#{tag}>"
+                          ].compact
+                        end
 
-          multiline ?  arr.join("\n") : arr.join('')
+          multiline ?  before_join.join("\n") : before_join.join('')
         end
         module_function :tag_hash_to_html
 

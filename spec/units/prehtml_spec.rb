@@ -33,6 +33,22 @@ describe Apodidae::Prehtml::Sandbox do
         should == [{:tag => 'br', :attrs => {}, :inner => nil}]
       end
 
+      specify do
+        Apodidae::Prehtml.new(%Q!rb('user.name')!).value.
+        should == [{:tag => 'rb', :attrs => {}, :inner => 'user.name'}]
+      end
+
+      specify do
+        Apodidae::Prehtml.new(<<-EOS).value.
+          rb("@users.each", ["user"]) do
+            rb("user.name")
+          end
+        EOS
+        should == [{:tag => 'rb_block', :attrs => {:statement => "@users.each", :args => ['user']}, :inner => [
+          {:tag => 'rb', :attrs => {}, :inner => 'user.name'}
+        ]}]
+      end
+
       describe "tag name include not alphanum character" do
         it "raise ArgumentError" do
           Proc.new{ Apodidae::Prehtml.new(%Q!tag(:'br"')!) }.should raise_error(ArgumentError)
@@ -56,6 +72,23 @@ describe Apodidae::Prehtml::Sandbox do
       @sandbox.instance_variable_set(:@value,
         [{:tag => 'span', :attrs => {:class => 'foo"'}}])
       @sandbox.to_html.should == %Q!<span class="foo\\""></span>!
+    end
+
+    specify do
+      @sandbox.instance_variable_set(:@value,
+        [{:tag => 'rb', :attrs => {}, :inner => 'user.name'}])
+      @sandbox.to_html.should == %Q!<%= user.name %>!
+    end
+
+    specify do
+      @sandbox.instance_variable_set(:@value,
+        [{:tag => 'rb_block', :attrs => {:statement => "@users.each", :args => ['user']}, :inner => [
+          {:tag => 'rb', :attrs => {}, :inner => 'user.name'}]}])
+      @sandbox.to_html(:multiline => true).should be_equal_ignoring_spaces(<<-EOS)
+        <% @users.each do |user| %>
+          <%= user.name %>
+        <% end %>
+      EOS
     end
 
     describe 'flat option is on' do
@@ -109,34 +142,36 @@ describe Apodidae::Prehtml do
   end
 end
 
-describe do
-  subject do
-    Apodidae::Prehtml.new(<<-EOS)
-      tag(:table) do
-        tag(:tr) do
-          tag(:td) { 'Suzuki' }
-          tag(:td) { 'suzuki@gmail.com' }
+describe 'prehtml to html' do
+  describe do
+    subject do
+      Apodidae::Prehtml.new(<<-EOS)
+        tag(:table) do
+          tag(:tr) do
+            tag(:td) { 'Suzuki' }
+            tag(:td) { 'suzuki@gmail.com' }
+          end
+          tag(:tr) do
+            tag(:td) { 'Sato' }
+            tag(:td) { 'sato@gmail.com' }
+          end
         end
-        tag(:tr) do
-          tag(:td) { 'Sato' }
-          tag(:td) { 'sato@gmail.com' }
-        end
-      end
-    EOS
-  end
+      EOS
+    end
 
-  specify do
-    subject.to_html(multiline: true).should be_equal_ignoring_spaces(<<-EOS)
-      <table>
-        <tr>
-          <td>Suzuki</td>
-          <td>suzuki@gmail.com</td>
-        </tr>
-        <tr>
-          <td>Sato</td>
-          <td>sato@gmail.com</td>
-        </tr>
-      </table>
-    EOS
+    specify do
+      subject.to_html(multiline: true).should be_equal_ignoring_spaces(<<-EOS)
+        <table>
+          <tr>
+            <td>Suzuki</td>
+            <td>suzuki@gmail.com</td>
+          </tr>
+          <tr>
+            <td>Sato</td>
+            <td>sato@gmail.com</td>
+          </tr>
+        </table>
+      EOS
+    end
   end
 end
