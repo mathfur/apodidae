@@ -101,6 +101,57 @@ EOS
     end
   end
 
+  describe "with --output-dir" do
+    describe "when tmp/output is specified" do
+      it "output html to tmp/output/app/views/words/edit.html.erb" do
+        output_file = "#{BASE_DIR}/tmp/output/foo"
+        output_file2 = "#{BASE_DIR}/tmp/output/bar"
+        FileUtils.rm_rf([output_file, output_file2])
+
+        Dir.mktmpdir do |barb_dir|
+          Dir.mktmpdir do |connection_dir|
+            Dir.mktmpdir do |rachis_dir|
+              open("#{barb_dir}/foo.barb", 'w'){|f| f.write(<<-EOS) }
+                #-->> gsub_by(Edge.new(:inner) => 'hello') do
+                #-->> output_to Edge.new(:foo) do
+                  tag(:div){ 'hello' }
+                #-->> end
+                #-->> end
+              EOS
+
+              connection_file = Tempfile.new(['connection', '.rb'], connection_dir)
+              connection_file.write(<<-EOS)
+                abc(:foo, :foo) do
+                  inner(:str1)
+                end
+                xyz(:foo, :foo) do
+                  inner(:str2)
+                end
+              EOS
+              connection_file.close
+
+              rachis_file = Tempfile.new(['rachis', '.rachis'], rachis_dir)
+              rachis_file.write(<<-EOS)
+                str1 'abc'
+                str2 'xyz'
+              EOS
+              rachis_file.close
+
+              execute_apodidae_command([
+                "--barb-dir=#{barb_dir}",
+                "--rachis-dir=#{rachis_dir}",
+                "--connection-file=#{connection_file.path}",
+                "--output-file=abc:#{output_file},xyz:#{output_file2}"
+              ])
+              File.read(output_file).should be_equal_ignoring_spaces "tag(:div){ 'abc' }"
+              File.read(output_file2).should be_equal_ignoring_spaces "tag(:div){ 'xyz' }"
+            end
+          end
+        end
+      end
+    end
+  end
+
   describe "without options" do
     it "output html to current directory" do
       pending

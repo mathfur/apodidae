@@ -22,6 +22,7 @@ opts = GetoptLong.new(
 
 manager = Apodidae::Manager.new
 dealing_label = nil
+output_pairs = {}
 
 begin
   opts.each do |opt, arg|
@@ -36,7 +37,12 @@ begin
     when '--connection-file'
       manager.set_connection_from_file(arg)
     when '--output-file'
-      dealing_label, output_dir = arg.split(':')
+      arg.split(',').map do |pair|
+        raise "--output-file values splited by ',' must be all include ':'." unless pair.include?(':')
+        pair.split(':')
+      end.each do |dealing_label, output_dir|
+        output_pairs[Apodidae::Edge.new(dealing_label)] = output_dir
+      end
     else
     end
   end
@@ -47,4 +53,4 @@ rescue RuntimeError => e
 end
 
 manager.generate
-manager.write_to(Apodidae::Edge.new(dealing_label) => output_dir)
+manager.write_to(output_pairs)
