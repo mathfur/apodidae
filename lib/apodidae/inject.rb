@@ -3,6 +3,11 @@ module Apodidae
   class Inject
     attr_reader :barb_or_rachis, :branch, :injects
 
+    @@cache = {}
+    def self.clear_cache
+      @@cache = {}
+    end
+
     def initialize(barb_or_rachis=nil, branch=nil, injects=[])
       injects.each do |e1, e2, inject|
         raise "edge_in `#{e1.inspect} must be Edge" unless e1.kind_of?(Edge)
@@ -11,7 +16,7 @@ module Apodidae
       end
 
       @barb_or_rachis = barb_or_rachis
-      @branch = nil
+      @branch = branch
       @injects = injects
     end
 
@@ -29,10 +34,9 @@ module Apodidae
       raise ArgumentError, "#{wanted_edge.inspect} is not Edge instance" unless wanted_edge.kind_of?(Edge)
 
       if @barb_or_rachis.kind_of?(Barb)
-        generated_inject_pairs = self.injects.map{|e, wanted_edge, inject| [e, inject.generate(wanted_edge, rachis_elems)]}
-
-        # 現在のbarbに入力する
-        self.barb.evaluate(wanted_edge, generated_inject_pairs)
+        @@cache[@branch] = (@branch && @@cache[@branch]) ||
+                              self.injects.map{|e, wanted_edge, inject| [e, inject.generate(wanted_edge, rachis_elems)]}
+        self.barb.evaluate(wanted_edge, @@cache[@branch])
       else
         edge_and_value = rachis_elems
           .find{|e, v| e.label.to_sym == @barb_or_rachis.to_s.to_sym} or

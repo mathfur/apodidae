@@ -26,7 +26,7 @@ module Apodidae
     end
 
     class Sandbox
-      attr_reader :value, :injects
+      attr_reader :injects
 
       def initialize
         @injects = []
@@ -35,11 +35,12 @@ module Apodidae
       def method_missing(label_in, label_out=nil, barb_name=nil, &block)
         raise "method `#{label_in}` does not exist" unless label_out
 
-        barb = Barb.find_by_name(barb_name) || label_out
+        barb = Barb.find_by_name((barb_name || '')[/^[^#]*/]) || label_out
+        branch = (barb_name =~ /#/) ? barb_name : nil
 
         sandbox = Sandbox.new
         sandbox.instance_eval(&block) if block_given?
-        @injects << [Edge.new(label_in), Edge.new(label_out), Inject.new(barb, nil, sandbox.injects)]
+        @injects << [Edge.new(label_in), Edge.new(label_out), Inject.new(barb, branch, sandbox.injects)]
         @injects
       end
     end

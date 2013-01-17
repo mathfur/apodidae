@@ -2,6 +2,10 @@
 require "spec_helper"
 
 describe Apodidae::Inject do
+  before do
+    Apodidae::Inject.clear_cache
+  end
+
   describe 'no statement' do
     specify do
       Proc.new { Apodidae::Inject.new }.should_not raise_error

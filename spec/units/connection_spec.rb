@@ -4,6 +4,7 @@ require "spec_helper"
 describe Apodidae::Connection do
   before do
     Apodidae::Barb.clear_all_barbs
+    Apodidae::Inject.clear_cache
   end
 
   describe '#initialize' do
@@ -141,6 +142,38 @@ describe Apodidae::Connection do
           </tr>
         </table>
       EOS
+    end
+  end
+
+  describe "have a branch" do
+    specify do
+      @table_barb = Apodidae::Barb.new("2way",<<-EOS)
+        #-->> output_to Edge.new(:output1) do
+          #-->> gsub_by(Edge.new('arr.first') => 'first_val') do
+          tag(:span){ 'first_val' }
+          #-->> end
+        #-->> end
+        #-->> output_to Edge.new(:output2) do
+          #-->> gsub_by(Edge.new('arr.last') => 'last_val') do
+          tag(:div){ 'last_val' }
+          #-->> end
+        #-->> end
+      EOS
+
+      @connection = Apodidae::Connection.new(<<-EOS)
+        output1(:output1, '2way#1') do
+          arr(:arr)
+        end
+
+        output2(:output2, '2way#1')
+      EOS
+
+      @rachis = Apodidae::Rachis.new(<<-EOS)
+        arr %w{foo bar baz}
+      EOS
+
+      @connection.generate(Apodidae::Edge.new(:output1), @rachis).should be_equal_ignoring_spaces "tag(:span){ 'foo' }"
+      @connection.generate(Apodidae::Edge.new(:output2), @rachis).should be_equal_ignoring_spaces "tag(:div){ 'baz' }"
     end
   end
 end
