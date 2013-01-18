@@ -4,11 +4,44 @@ Apodidae is a general code generater from DSL.
  
 Usage
 ------
-You write a connection_file, then the following command create a file specified by output_filename.
+
+Create some barb files.
+Example:
 ```
-$ apodidae --barb-dir=data/barb --rachis-dir=data/rachis --connection-file=connection_filename --output-file=a_left_edge_name:output_filename
+# data/barb/sample_barb.barb
+#-->> gsub_by(Edge.new(:inner) => 'hello') do
+#-->> output_to Edge.new(:foo) do
+<div>hello</div>
+#-->> end
+#-->> end
+```
+and
+
+Create some rachis files.
+Example:
+```ruby
+# data/rachis/foo.rachis
+str1 'abc'
 ```
 
+Create some connection files.
+Example:
+```ruby
+# tmp/connection/foo.rb
+output(:foo, :sample_barb) do
+  inner(:str1)
+end
+```
+
+You write a connection_file, then the following command create a file specified by output_filename.
+```shell
+$ apodidae
+  --barb-dir=data/barb
+  --rachis-dir=data/rachis
+  --connection-file=data/connection/foo.rb
+  --output-file=output:tmp/foo.html
+```
+As the result, tmp/foo.html is created.
 
 License
 ----------

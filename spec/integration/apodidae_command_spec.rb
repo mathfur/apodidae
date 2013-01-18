@@ -4,31 +4,25 @@ require "spec_helper"
 describe 'apodidae command' do
   describe 'with --help option' do
     it "output help statement" do
-      execute_apodidae_command("--help").should == <<EOS
-Usage: apodidae [options]
-    -w, --watch     compile automatically when template or source is changed.
-EOS
+      execute_apodidae_command("--help").should be_include("Usage: apodidae [options]")
     end
   end
 
   describe 'with -h option' do
     it "output help statement" do
-      execute_apodidae_command("-h").should == <<EOS
-Usage: apodidae [options]
-    -w, --watch     compile automatically when template or source is changed.
-EOS
+      execute_apodidae_command("--help").should be_include("Usage: apodidae [options]")
     end
   end
 
   describe "with --version option" do
     it "output version number" do
-      execute_apodidae_command("--version").strip.should == '0.0.0'
+      execute_apodidae_command("--version").strip.should == '0.0.2'
     end
   end
 
   describe "with -v option" do
     it "output version number" do
-      execute_apodidae_command("-v").strip.should == '0.0.0'
+      execute_apodidae_command("-v").strip.should == '0.0.2'
     end
   end
 
@@ -44,11 +38,13 @@ EOS
     end
   end
 
+  output_file_name1 = "tmp/output/foo"
+  output_file_name2 = "tmp/output/bar"
+
   describe "with --output-dir" do
-    describe "when tmp/output is specified" do
-      it "output html to tmp/output/app/views/words/edit.html.erb" do
-        output_file = "#{BASE_DIR}/tmp/output/foo"
-        FileUtils.rm_rf(output_file)
+    describe "when tmp/output is #{output_file_name1}" do
+      it "output html to #{output_file_name1}" do
+        FileUtils.rm_rf(output_file_name1)
 
         Dir.mktmpdir do |barb_dir|
           Dir.mktmpdir do |connection_dir|
@@ -89,9 +85,9 @@ EOS
                 "--barb-dir=#{barb_dir}",
                 "--rachis-dir=#{rachis_dir}",
                 "--connection-file=#{connection_file.path}",
-                "--output-file=abc:#{output_file}"
+                "--output-file=abc:#{output_file_name1}"
               ])
-              File.read(output_file).should be_equal_ignoring_spaces <<-EOS
+              File.read(output_file_name1).should be_equal_ignoring_spaces <<-EOS
                 <div>abc</div>
               EOS
             end
@@ -102,12 +98,11 @@ EOS
   end
 
   describe "with --output-dir" do
-    describe "when tmp/output is specified" do
-      it "output html to tmp/output/app/views/words/edit.html.erb" do
-        output_file = "#{BASE_DIR}/tmp/output/foo"
-        FileUtils.rm_rf(output_file)
+    describe "when the target of 'abc' is #{output_file_name1} and the target of 'xyz' is #{output_file_name2}" do
+      it "output 'abc' to #{output_file_name1} and 'xyz' to #{output_file_name2}" do
+        FileUtils.rm_rf(output_file_name1)
 
-        output_file2 = Tempfile.new(['output_file2', '.txt'], "#{BASE_DIR}/tmp/output")
+        output_file2 = Tempfile.new(['output_file_name2', '.txt'], File.dirname(output_file_name2))
         output_file2.write(<<-EOS)
            {{{
            #123
@@ -148,10 +143,10 @@ EOS
                 "--barb-dir=#{barb_dir}",
                 "--rachis-dir=#{rachis_dir}",
                 "--connection-file=#{connection_file.path}",
-                "--output-file=abc:#{output_file},xyz:#{output_file2.path}#123"
+                "--output-file=abc:#{output_file_name1},xyz:#{output_file2.path}#123"
               ])
-              File.read(output_file).should be_equal_ignoring_spaces "tag(:div){ 'abc' }"
-              File.read(output_file2).should be_equal_ignoring_spaces <<-EOS
+              File.read(output_file_name1).should be_equal_ignoring_spaces "tag(:div){ 'abc' }"
+              File.read(output_file2.path).should be_equal_ignoring_spaces <<-EOS
                 {{{
                 tag(:div){ 'xyz' }
                 }}}
@@ -160,12 +155,6 @@ EOS
           end
         end
       end
-    end
-  end
-
-  describe "without options" do
-    it "output html to current directory" do
-      pending
     end
   end
 

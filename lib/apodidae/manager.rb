@@ -1,6 +1,8 @@
 # -*- encoding: utf-8 -*-
 
 module Apodidae
+
+  # This class manager barbs, rachises and connections about inputing or outputing to files.
   class Manager
     attr_reader :barbs, :rachises, :connection, :result
     def initialize

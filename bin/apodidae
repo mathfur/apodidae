@@ -6,7 +6,12 @@ require './lib/apodidae'
 
 usage = <<EOS
 Usage: apodidae [options]
-    -w, --watch     compile automatically when template or source is changed.
+    -h, --help             show help.
+    -v, --version          show version.
+    -b, --barb-dir         specify barb dir.
+    -r, --rachis-dir       specify rachis dir.
+    -c, --connection-file  specify connection file name.
+    -o, --output-file      specify generated file name.
 EOS
 output_dir = "#{File.dirname(__FILE__)}/.."
 

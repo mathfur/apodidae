@@ -126,22 +126,6 @@ describe Apodidae::Prehtml::Sandbox do
   end
 end
 
-describe Apodidae::Prehtml do
-  describe '#to_html' do
-    before do
-      @prehtml = Apodidae::Prehtml.new('')
-    end
-
-    describe "width option is 123" do
-      it "return lines, and the each line do not have more than 123 length" do
-        pending
-      end
-    end
-
-    it "innerがnilの場合とそうでない場合"
-  end
-end
-
 describe 'prehtml to html' do
   describe do
     subject do
