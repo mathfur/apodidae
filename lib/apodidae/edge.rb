@@ -32,5 +32,9 @@ module Apodidae
     def range?
       self.head_type == :range
     end
+
+    def to_s
+      "#{@label}#{@act_to_value ? ".#{@act_to_value}" : ''}@#{@type.join(',')}"
+    end
   end
 end

@@ -47,3 +47,16 @@ RSpec::Matchers.define :be_same_hash do |expect|
     EOS
   end
 end
+
+module HelperMethods
+  def prepare_files(&block)
+    Dir.mktmpdir do |barb_dir|
+      Dir.mktmpdir do |connection_dir|
+        Dir.mktmpdir do |rachis_dir|
+          block.call(barb_dir, rachis_dir, connection_dir)
+        end
+      end
+    end
+  end
+end
+include HelperMethods

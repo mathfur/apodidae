@@ -23,9 +23,8 @@ module Apodidae
     end
 
     def add_barb_from_file(path)
-      Dir["#{path}/**/*.barb"].each do |barb_fname|
-        label = File.basename(barb_fname)[/^[^.]*/]
-        @barbs[label] = Barb.new(label, File.read(barb_fname))
+      each_file(path, 'barb') do |label, barb_contents|
+        @barbs[label] = Barb.new(label, barb_contents)
       end
     end
 
@@ -42,8 +41,8 @@ module Apodidae
     end
 
     def add_rachis_from_file(path)
-      Dir["#{path}/**/*.rachis"].each do |fname|
-        @rachises = @rachises.merge(Apodidae::Rachis.new(File.read(fname)).elems)
+      each_file(path, 'rachis') do |_, contents|
+        @rachises = @rachises.merge(Apodidae::Rachis.new(contents).elems)
       end
     end
 
@@ -63,6 +62,35 @@ module Apodidae
           f.write inserted_content
         end
       end
+    end
+
+    def list_barbs_string(path)
+      each_file(path, 'barb').map do |label, barb_contents|
+        barb = Barb.new(label, barb_contents)
+        (
+          [label] +
+          (
+            barb.right_edges.map(&:to_s) +
+            ['->'] +
+            barb.left_edges.map(&:to_s)
+          ).map{|line| "  #{line}"}
+        ).join("\n")
+      end.join("\n\n")
+    end
+
+    private
+    def each_file(path, ext, &block)
+      result = []
+      Dir["#{path}/**/*.#{ext}"].each do |barb_fname|
+        label = File.basename(barb_fname)[/^([^.]*)\.#{ext}/, 1]
+        args = [label, File.read(barb_fname)]
+        if block_given?
+          block.call(*args)
+        else
+          result << args
+        end
+      end
+      result
     end
   end
 end
