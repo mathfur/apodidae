@@ -38,11 +38,13 @@ module Apodidae
                               self.injects.map{|e, wanted_edge, inject| [e, inject.generate(wanted_edge, rachis_elems)]}
         self.barb.evaluate(wanted_edge, @@cache[@branch])
       else
-        edge_and_value = rachis_elems
-          .find{|e, v| e.label.to_sym == @barb_or_rachis.to_s.to_sym} or
-            raise "The keys of rachis_elems `#{rachis_elems.inspect}` don't have `#{@barb_or_rachis.to_s}`"
-        edge_and_value.try(:last)
+        edge_and_value = rachis_elems.find{|e, v| e.label.to_sym == @barb_or_rachis.to_s.to_sym}
+        edge_and_value.try(:last) || self.todo_string
       end
+    end
+
+    def todo_string
+      'TODO'
     end
   end
 end
