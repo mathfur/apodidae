@@ -2,7 +2,8 @@
 
 module Apodidae
   class Barb
-    attr_reader :name, :contents, :erbed_contents, :left_edges, :right_edges
+    attr_reader :name, :contents, :erbed_contents, :left_edges, :right_edges,
+      :min_version, :max_version
 
     @@all_barbs = []
 
@@ -11,7 +12,9 @@ module Apodidae
       @contents = contents
       @left_edges = []
       @right_edges = []
-      @erbed_contents = erbed(contents)
+      @erbed_contents, attrs = erbed(contents)
+      @min_version = attrs[:min_version]
+      @max_version = attrs[:max_version]
       @@all_barbs << self
     end
 
@@ -21,6 +24,13 @@ module Apodidae
 
     def header_end
       /\s*#\s*__HEADER_END__\s*/
+    end
+
+    def able_to_use?
+      to_i = ->e{ e.split('.').map(&:to_i) }
+
+      (0 >= (to_i[min_version] <=> to_i[Apodidae::VERSION])) and
+        (0 >= (to_i[Apodidae::VERSION] <=> to_i[max_version]))
     end
 
     def evaluate(left_edge, edge_value_pairs)
@@ -42,6 +52,10 @@ module Apodidae
         index_name = context.index_name
 
         case line
+        when /^(?:\s*)#(?:\s*)apodidae_version:\s*(.*)\s*$/
+          low, high = $1.split(/\s*<=\s*/)
+          context.min_version = low or raise "wrong version is specified. line: #{line.inspect}"
+          context.max_version = high || low
         when /^(\s*)#-->>\s*(output_to\(?\s*(.*)\)?\s*do\s*)$/
           @left_edges << eval($3)
           context.push([])
@@ -103,7 +117,13 @@ module Apodidae
           line.rstrip
         end
       end.join("\n")
-      (result.blank? ? '' : (result + "\n"))
+
+      return_attributes = {}
+      %w{min_version max_version}.each do |k, v|
+        return_attributes[k.to_sym] = context.send(k)
+      end
+
+      [(result.blank? ? '' : (result + "\n")), return_attributes]
     end
 
     def self.find_by_name(barb_name)
@@ -152,8 +172,12 @@ module Apodidae
     end
 
     class Context
+      attr_accessor :min_version, :max_version
+
       def initialize
         @value = []
+        @min_version = nil
+        @max_version = nil
       end
 
       def level

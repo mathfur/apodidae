@@ -61,6 +61,44 @@ describe Apodidae::Barb do
     specify { subject.left_edges.first.type.should == [:prehtml] }
   end
 
+  describe 'too old barb' do
+    subject do
+      Apodidae::Barb.new(:foo, <<-INPUT)
+        # apodidae_version: 0.0.0
+        #-->> gsub_by(Edge.new(:inner_div) => 'hello') do
+        #-->> output_to Edge.new(:foo) do
+          tag(:div) { 'hello' }
+        #-->> end
+        #-->> end
+      INPUT
+    end
+
+    specify do
+      subject.min_version.should == '0.0.0'
+      subject.max_version.should == '0.0.0'
+      subject.should_not be_able_to_use
+    end
+  end
+
+  describe 'available version barb' do
+    subject do
+      Apodidae::Barb.new(:foo, <<-INPUT)
+        # apodidae_version: 0.0.1 <= 100.53.1
+        #-->> gsub_by(Edge.new(:inner_div) => 'hello') do
+        #-->> output_to Edge.new(:foo) do
+          tag(:div) { 'hello' }
+        #-->> end
+        #-->> end
+      INPUT
+    end
+
+    specify do
+      subject.min_version.should == '0.0.1'
+      subject.max_version.should == '100.53.1'
+      subject.should be_able_to_use
+    end
+  end
+
   describe '2 output_to' do
     subject do
       Apodidae::Barb.new(:foo, <<-INPUT)
