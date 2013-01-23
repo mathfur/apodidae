@@ -74,7 +74,7 @@ describe 'apodidae command' do
   output_file_name1 = "tmp/output/foo"
   output_file_name2 = "tmp/output/bar"
 
-  describe "with --output-dir" do
+  describe "with --output-file" do
     describe "when tmp/output is #{output_file_name1}" do
       it "output html to #{output_file_name1}" do
         FileUtils.rm_rf(output_file_name1)
@@ -126,7 +126,7 @@ describe 'apodidae command' do
     end
   end
 
-  describe "with --output-dir" do
+  describe "with --output-file" do
     describe "when the target of 'abc' is #{output_file_name1} and the target of 'xyz' is #{output_file_name2}" do
       it "output 'abc' to #{output_file_name1} and 'xyz' to #{output_file_name2}" do
         FileUtils.rm_rf(output_file_name1)

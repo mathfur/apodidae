@@ -56,6 +56,7 @@ module Apodidae
           low, high = $1.split(/\s*<=\s*/)
           context.min_version = low or raise "wrong version is specified. line: #{line.inspect}"
           context.max_version = high || low
+          nil
         when /^(\s*)#-->>\s*(output_to\(?\s*(.*)\)?\s*do\s*)$/
           @left_edges << eval($3)
           context.push([])
@@ -116,7 +117,7 @@ module Apodidae
           end
           line.rstrip
         end
-      end.join("\n")
+      end.compact.join("\n")
 
       return_attributes = {}
       %w{min_version max_version}.each do |k, v|

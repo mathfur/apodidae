@@ -53,7 +53,6 @@ module Apodidae
         raise "The edge `#{edge.inspect}` is not found. @result:#{@result.inspect}, edge:#{edge.inspect}" unless edge_and_content
         content = edge_and_content.last
         raise "The edge `#{edge.inspect}` don't have content. @result:#{@result.inspect}, edge:#{edge.inspect}" unless content
-        raise "File #{target_file} is alreasy exist." if !anchor && File.exist?(target_file)
 
         FileUtils.mkdir_p(File.dirname(target_file))
         existing_content = anchor && File.read(target_file)

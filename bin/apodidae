@@ -47,8 +47,8 @@ begin
       arg.split(',').map do |pair|
         raise "--output-file values splited by ',' must be all include ':'." unless pair.include?(':')
         pair.split(':')
-      end.each do |dealing_label, output_dir|
-        output_pairs[Apodidae::Edge.new(dealing_label)] = output_dir
+      end.each do |dealing_label, output_target|
+        output_pairs[Apodidae::Edge.new(dealing_label)] = output_target
       end
     when '--list-barbs'
       puts manager.list_barbs_string(arg)
