@@ -1,4 +1,4 @@
-# apodidae_version: 0.0.2
+# apodidae_version: 0.0.3
 #-->> gsub_by(Edge.new(:input, :prehtml) => 'Prehtml_src') do
 #-->> output_to Edge.new(:output, :html) do
 #--==   Prehtml.new(Prehtml_src).to_html(multiline: true)

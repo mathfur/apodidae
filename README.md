@@ -5,9 +5,17 @@ Apodidae is a general code generater from DSL.
 Usage
 ------
 
-Create some barb files.
-Example:
+At the first, 
+```shell
+$ git clone https://github.com/mathfur/apodidae.git
+$ cd apodidae
+$ rake build
+$ gem install pkg/apodidae-0.0.3.gem
 ```
+
+You create some barb files.
+Example:
+```ruby
 # data/barb/sample_barb.barb
 #-->> gsub_by(Edge.new(:inner) => 'hello') do
 #-->> output_to Edge.new(:foo) do
@@ -15,16 +23,15 @@ Example:
 #-->> end
 #-->> end
 ```
-and
 
-Create some rachis files.
+and, then you create some rachis files.
 Example:
 ```ruby
 # data/rachis/foo.rachis
 str1 'abc'
 ```
 
-Create some connection files.
+and, then you create some connection files.
 Example:
 ```ruby
 # tmp/connection/foo.rb
@@ -41,6 +48,7 @@ $ apodidae
   --connection-file=data/connection/foo.rb
   --output-file=output:tmp/foo.html
 ```
+
 As the result, tmp/foo.html is created.
 
 License

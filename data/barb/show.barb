@@ -1,4 +1,4 @@
-# apodidae_version: 0.0.2
+# apodidae_version: 0.0.3
 #-->> gsub_by(Edge.new(:instance_name) => 'useR', Edge.new("instance_name.pluralize") => 'users') do
   #-->> output_to Edge.new(:route) do
   resources :users

@@ -1,4 +1,4 @@
-# apodidae_version: 0.0.2
+# apodidae_version: 0.0.3
 #-->> output_to Edge.new(:output_html) do
 tag(:table) do
   tag(:tr) do

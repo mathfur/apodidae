@@ -1,4 +1,4 @@
-# apodidae_version: 0.0.2
+# apodidae_version: 0.0.3
 #-->> output_to Edge.new(:prehtml) do
 tag(:table) do
   #-->> loop_by(Edge.new(:input, [:range, {:html => :html}]) => ['__i__', 'row']) do

@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "apodidae"
-  s.version = "0.0.0"
+  s.version = "0.0.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["mathfuru"]
-  s.date = "2013-01-07"
+  s.date = "2013-01-25"
   s.description = ""
   s.email = "mathfuru@gmail.com"
   s.executables = ["apodidae"]
@@ -25,12 +25,17 @@ Gem::Specification.new do |s|
     "README.md",
     "Rakefile",
     "VERSION",
+    "apodidae.gemspec",
     "bin/apodidae",
     "data/barb/convert_to_html.barb",
     "data/barb/rachis1.barb",
     "data/barb/sample_barb.barb",
-    "data/connection/foo.rb",
-    "data/rachis/foo.rachis",
+    "data/barb/show.barb",
+    "data/barb/simple_table.barb",
+    "data/connection/a_show.rb",
+    "data/connection/foo2.rb",
+    "data/rachis/a_show.rachis",
+    "data/rachis/foo2.rachis",
     "lib/apodidae.rb",
     "lib/apodidae/barb.rb",
     "lib/apodidae/connection.rb",
@@ -64,6 +69,7 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<rspec>, [">= 0"])
       s.add_runtime_dependency(%q<guard>, [">= 0"])
       s.add_runtime_dependency(%q<guard-rspec>, [">= 0"])
+      s.add_runtime_dependency(%q<rb-fsevent>, ["~> 0.9.1"])
       s.add_runtime_dependency(%q<simplecov>, [">= 0"])
       s.add_runtime_dependency(%q<simplecov-rcov>, [">= 0"])
       s.add_runtime_dependency(%q<active_support>, [">= 0"])
@@ -73,6 +79,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<rspec>, [">= 0"])
       s.add_dependency(%q<guard>, [">= 0"])
       s.add_dependency(%q<guard-rspec>, [">= 0"])
+      s.add_dependency(%q<rb-fsevent>, ["~> 0.9.1"])
       s.add_dependency(%q<simplecov>, [">= 0"])
       s.add_dependency(%q<simplecov-rcov>, [">= 0"])
       s.add_dependency(%q<active_support>, [">= 0"])
@@ -83,6 +90,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<rspec>, [">= 0"])
     s.add_dependency(%q<guard>, [">= 0"])
     s.add_dependency(%q<guard-rspec>, [">= 0"])
+    s.add_dependency(%q<rb-fsevent>, ["~> 0.9.1"])
     s.add_dependency(%q<simplecov>, [">= 0"])
     s.add_dependency(%q<simplecov-rcov>, [">= 0"])
     s.add_dependency(%q<active_support>, [">= 0"])

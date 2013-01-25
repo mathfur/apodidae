@@ -16,13 +16,13 @@ describe 'apodidae command' do
 
   describe "with --version option" do
     it "output version number" do
-      execute_apodidae_command("--version").strip.should == '0.0.2'
+      execute_apodidae_command("--version").strip.should == '0.0.3'
     end
   end
 
   describe "with -v option" do
     it "output version number" do
-      execute_apodidae_command("-v").strip.should == '0.0.2'
+      execute_apodidae_command("-v").strip.should == '0.0.3'
     end
   end
 
