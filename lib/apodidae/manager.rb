@@ -15,7 +15,7 @@ module Apodidae
 
       if (config_fname = opts[:config_file])
         raise "config file #{config_fname} is not found" unless File.exist?(config_fname)
-        load_config(YAML.load(config_fname))
+        load_config(YAML.load_file(config_fname))
       end
 
       @result = []
