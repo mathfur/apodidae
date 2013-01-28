@@ -5,10 +5,18 @@ module Apodidae
   # This class manager barbs, rachises and connections about inputing or outputing to files.
   class Manager
     attr_reader :barbs, :rachises, :connection, :result
-    def initialize
+    attr_accessor :edge_target_pairs
+
+    def initialize(opts={})
       @barbs = {}
       @rachises = {}
       @connection = nil
+      @edge_target_pairs = {}
+
+      if (config_fname = opts[:config_file])
+        raise "config file #{config_fname} is not found" unless File.exist?(config_fname)
+        load_config(YAML.load(config_fname))
+      end
 
       @result = []
     end
@@ -16,6 +24,23 @@ module Apodidae
     def generate
       @result = @connection.generate_all(@rachises.to_a)
       self
+    end
+
+    def load_config(config_value)
+      config_value.each do |label, val|
+        case label
+        when 'barb-dir'
+          self.add_barb_from_file(val)
+        when 'rachis-dir'
+          self.add_rachis_from_file(val)
+        when 'connection-file'
+          self.set_connection_from_file(val)
+        when 'output-file'
+          val.each do |dealing_label, output_target|
+            @edge_target_pairs[Apodidae::Edge.new(dealing_label)] = output_target
+          end
+        end
+      end
     end
 
     def add_barb_from_string(label, src)
@@ -63,6 +88,10 @@ module Apodidae
       end
     end
 
+    def write
+      self.write_to(@edge_target_pairs)
+    end
+
     def list_barbs_string(path)
       each_file(path, 'barb').map do |label, barb_contents|
         barb = Barb.new(label, barb_contents)
@@ -78,11 +107,14 @@ module Apodidae
     end
 
     private
+    # Example:
+    #   each_file('foo/bar', 'txt') do |basename, contents|
+    #   end
     def each_file(path, ext, &block)
       result = []
-      Dir["#{path}/**/*.#{ext}"].each do |barb_fname|
-        label = File.basename(barb_fname)[/^([^.]*)\.#{ext}/, 1]
-        args = [label, File.read(barb_fname)]
+      Dir["#{path}/**/*.#{ext}"].each do |fname|
+        label = File.basename(fname)[/^([^.]*)\.#{ext}/, 1]
+        args = [label, File.read(fname)]
         if block_given?
           block.call(*args)
         else

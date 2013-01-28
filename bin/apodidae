@@ -27,7 +27,8 @@ opts = GetoptLong.new(
   ['--output-file', '-o', GetoptLong::OPTIONAL_ARGUMENT]
 )
 
-manager = Apodidae::Manager.new
+config_file = "#{Dir.pwd}/.apodidae.yml"
+manager = Apodidae::Manager.new(:config_file => File.exist?(config_file) && config_file)
 dealing_label = nil
 output_pairs = {}
 
@@ -62,5 +63,6 @@ rescue RuntimeError => e
   exit
 end
 
+manager.edge_target_pairs = output_pairs
 manager.generate
-manager.write_to(output_pairs)
+manager.write

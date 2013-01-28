@@ -124,9 +124,7 @@ describe 'apodidae command' do
         end
       end
     end
-  end
 
-  describe "with --output-file" do
     describe "when the target of 'abc' is #{output_file_name1} and the target of 'xyz' is #{output_file_name2}" do
       it "output 'abc' to #{output_file_name1} and 'xyz' to #{output_file_name2}" do
         FileUtils.rm_rf(output_file_name1)

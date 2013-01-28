@@ -120,4 +120,55 @@ describe Apodidae::Manager do
 
     it_should_behave_like 'Manager'
   end
+
+  describe 'with .apodidaerc' do
+    specify do
+      @manager = Apodidae::Manager.new
+
+      Dir.mktmpdir do |tempdir|
+        Dir.mktmpdir do |barb_dir|
+          Dir.mktmpdir do |rachis_dir|
+            open("#{barb_dir}/sample_barb.barb", 'w'){|f| f.write <<-EOS }
+              #-->> gsub_by(Edge.new(:inner) => 'hello') do
+              #-->> output_to Edge.new(:foo) do
+                tag(:div) { 'hello' }
+              #-->> end
+              #-->> end
+            EOS
+
+            connection_fp = Tempfile.new(['connection', '.rb'], tempdir)
+            connection_fp.write(<<-EOS)
+              abc(:foo, :sample_barb) do
+                inner(:str1)
+              end
+            EOS
+            connection_fp.close
+
+            tempfile = Tempfile.new(['rachis', '.rachis'], rachis_dir)
+            tempfile.write(<<-EOS)
+              str1 'abc'
+            EOS
+            tempfile.close
+
+            target_fname = "#{BASE_DIR}/tmp/output1"
+            @manager.load_config({
+              'barb-dir' => barb_dir,
+              'rachis-dir' => rachis_dir,
+              'connection-file' => connection_fp.path,
+              'output-file' => {
+                'abc' => target_fname
+              }
+            })
+
+            @manager.generate
+            @manager.write
+
+            File.read(target_fname).should be_equal_ignoring_spaces <<-EOS
+              tag(:div) { 'abc' }
+            EOS
+          end
+        end
+      end
+    end
+  end
 end
