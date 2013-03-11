@@ -12,7 +12,7 @@ module Apodidae
       injects.each do |e1, e2, inject|
         raise "edge_in `#{e1.inspect} must be Edge" unless e1.kind_of?(Edge)
         raise "edge_out `#{e2.inspect} must be Edge" unless e2.kind_of?(Edge)
-        raise "inject `#{inject.inspect} must be Edge" unless inject.kind_of?(Inject)
+        raise "inject `#{inject.inspect} must respond to :generate" unless inject.respond_to?(:generate)
       end
 
       @barb_or_rachis = barb_or_rachis

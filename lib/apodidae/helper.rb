@@ -22,3 +22,21 @@ class Object
     self.present? ? self : obj
   end
 end
+
+class Hash
+  def set_only_not_nil(key, value)
+    if key
+      self[key] = value
+    end
+  end
+
+  def remove_nil
+    result = {}
+    self.keys.each do |key|
+      if self[key]
+        result[key] = self[key]
+      end
+    end
+    result
+  end
+end
