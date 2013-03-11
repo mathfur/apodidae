@@ -5,7 +5,7 @@ module Apodidae
   # This class manager barbs, rachises and connections about inputing or outputing to files.
   class Manager
     attr_reader :barbs, :rachises, :connection, :result
-    attr_accessor :edge_target_pairs
+    attr_accessor :edge_target_pairs, :use_apodidae_yml
 
     def initialize(opts={})
       @barbs = {}
@@ -13,7 +13,7 @@ module Apodidae
       @connection = nil
       @edge_target_pairs = {}
 
-      if (config_fname = opts[:config_file])
+      if @use_apodidae_yml && (config_fname = opts[:config_file])
         raise "config file #{config_fname} is not found" unless File.exist?(config_fname)
         load_config(YAML.load_file(config_fname))
       end

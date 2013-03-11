@@ -6,14 +6,15 @@ require './lib/apodidae'
 
 usage = <<EOS
 Usage: apodidae [options]
-    -h, --help             show help.
-    -v, --version          show version.
-    -b, --barb-dir         specify barb dir.
-    -r, --rachis-dir       specify rachis dir.
-    -c, --connection-file  specify connection file name.
-    -o, --output-file      specify generated file name.
-    -l, --list-barbs       specify barb dir then list all barbs.
-    -p, --use-clipboard    the clipboard string is used by connection data.
+    -h, --help                  show help.
+    -v, --version               show version.
+    -b, --barb-dir              specify barb dir.
+    -r, --rachis-dir            specify rachis dir.
+    -c, --connection-file       specify connection file name.
+    -o, --output-file           specify generated file name.
+    -l, --list-barbs            specify barb dir then list all barbs.
+    -n, --dont-use-apodidae-yml specify if you do not want to use .apodidae.yml
+    -p, --use-clipboard         the clipboard string is used by connection data.
 EOS
 output_dir = "#{File.dirname(__FILE__)}/.."
 
@@ -26,7 +27,8 @@ opts = GetoptLong.new(
   ['--rachis-dir', '-r', GetoptLong::OPTIONAL_ARGUMENT],
   ['--connection-file', '-c', GetoptLong::OPTIONAL_ARGUMENT],
   ['--output-file', '-o', GetoptLong::OPTIONAL_ARGUMENT],
-  ['--use-clipboard', '-p', GetoptLong::NO_ARGUMENT]
+  ['--use-clipboard', '-p', GetoptLong::NO_ARGUMENT],
+  ['--dont-use-apodidae-yml', '-n',  GetoptLong::NO_ARGUMENT]
 )
 
 config_file = "#{ENV['HOME']}/.apodidae.yml"
@@ -58,6 +60,8 @@ begin
     when '--list-barbs'
       puts manager.list_barbs_string(arg)
       exit
+    when '--dont-use-apodidae-yml'
+      manager.use_apodidae_yml = false
     else
     end
   end

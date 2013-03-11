@@ -116,7 +116,8 @@ describe 'apodidae command' do
             "--barb-dir=#{barb_dir}",
             "--rachis-dir=#{rachis_dir}",
             "--connection-file=#{connection_file.path}",
-            "--output-file=abc:#{output_file_name1}"
+            "--output-file=abc:#{output_file_name1}",
+            "--dont-use-apodidae-yml"
           ])
           File.read(output_file_name1).should be_equal_ignoring_spaces <<-EOS
             <div>abc</div>
