@@ -61,6 +61,23 @@ module Apodidae
       @connection = Apodidae::Connection.new(File.read(fname))
     end
 
+    def use_clipboard
+      raise "pbcopy and pbpaste command are needed." if `which pbcopy`.blank? or `which pbpaste`.blank?
+      input = `pbpaste`
+      puts "INPUT FROM CLIPBOARD:"
+      puts "----------------"
+      puts input
+      puts "----------------"
+      puts "Are you sure to run the statement? (y/n)"
+      puts "(If the statement contain arbitrary ruby statements, the statement will be executed in meaning of ruby.)"
+      if Kernel.gets.strip == 'y'
+        @connection = Apodidae::Connection.new(input)
+        @use_clipboard = true
+      else
+        puts "Stop."
+      end
+    end
+
     def add_rachis(args)
       @rachises = @rachises.merge(args)
     end
@@ -89,7 +106,25 @@ module Apodidae
     end
 
     def write
-      self.write_to(@edge_target_pairs)
+      if @use_clipboard
+        self.write_to_clipboard
+      else
+        self.write_to(@edge_target_pairs)
+      end
+    end
+
+    def write_to_clipboard
+      content = @result.map{|e| e.last}.join("\n")
+
+      IO.popen("pbcopy", 'w') do |io|
+        io.write content
+        puts "==================="
+        puts "WRITE TO CLIPBOARD:"
+        puts "---------------"
+        puts content
+        puts "---------------"
+      end
+      @output_to_clipboard = nil
     end
 
     def list_barbs_string(path)

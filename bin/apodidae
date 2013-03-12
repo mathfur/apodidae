@@ -13,6 +13,7 @@ Usage: apodidae [options]
     -c, --connection-file  specify connection file name.
     -o, --output-file      specify generated file name.
     -l, --list-barbs       specify barb dir then list all barbs.
+    -p, --use-clipboard    the clipboard string is used by connection data.
 EOS
 output_dir = "#{File.dirname(__FILE__)}/.."
 
@@ -24,7 +25,8 @@ opts = GetoptLong.new(
   ['--barb-dir', '-b', GetoptLong::OPTIONAL_ARGUMENT],
   ['--rachis-dir', '-r', GetoptLong::OPTIONAL_ARGUMENT],
   ['--connection-file', '-c', GetoptLong::OPTIONAL_ARGUMENT],
-  ['--output-file', '-o', GetoptLong::OPTIONAL_ARGUMENT]
+  ['--output-file', '-o', GetoptLong::OPTIONAL_ARGUMENT],
+  ['--use-clipboard', '-p', GetoptLong::NO_ARGUMENT]
 )
 
 config_file = "#{Dir.pwd}/.apodidae.yml"
@@ -44,6 +46,8 @@ begin
       manager.add_rachis_from_file(arg)
     when '--connection-file'
       manager.set_connection_from_file(arg)
+    when '--use-clipboard'
+      manager.use_clipboard
     when '--output-file'
       arg.split(',').map do |pair|
         raise "--output-file values splited by ',' must be all include ':'." unless pair.include?(':')
