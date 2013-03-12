@@ -29,7 +29,7 @@ opts = GetoptLong.new(
   ['--use-clipboard', '-p', GetoptLong::NO_ARGUMENT]
 )
 
-config_file = "#{Dir.pwd}/.apodidae.yml"
+config_file = "#{ENV['HOME']}/.apodidae.yml"
 manager = Apodidae::Manager.new(:config_file => File.exist?(config_file) && config_file)
 dealing_label = nil
 output_pairs = {}
