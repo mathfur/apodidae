@@ -41,7 +41,9 @@ module Apodidae
           sandbox.instance_eval(&block)
           @injects << [Edge.new(label_in), Edge.new(label_out), sandbox]
         else
-          barb = Barb.find_by_name((barb_name || '')[/^[^#]*/]) || label_out
+          barb = Barb.find_by_name((barb_name || '')[/^[^#]*/])
+          STDERR.puts "#{barb_name} is not found in all barbs." unless barb
+          barb ||= label_out
           branch = (barb_name =~ /#/) ? barb_name : nil
 
           sandbox = Sandbox.new
