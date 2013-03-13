@@ -32,9 +32,15 @@ opts = GetoptLong.new(
 )
 
 config_file = "#{ENV['HOME']}/.apodidae.yml"
-manager = Apodidae::Manager.new(:config_file => File.exist?(config_file) && config_file)
+manager = Apodidae::Manager.new
 dealing_label = nil
 output_pairs = {}
+
+if !ARGV.include?('--dont-use-apodidae-yml') and !ARGV.include?('-n')
+  if File.exist?(config_file)
+    manager.load_config(YAML.load_file(config_file))
+  end
+end
 
 begin
   opts.each do |opt, arg|
@@ -60,8 +66,6 @@ begin
     when '--list-barbs'
       puts manager.list_barbs_string(arg)
       exit
-    when '--dont-use-apodidae-yml'
-      manager.use_apodidae_yml = false
     else
     end
   end
