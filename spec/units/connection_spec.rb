@@ -181,15 +181,15 @@ describe Apodidae::Connection do
     specify do
       @barb = Apodidae::Barb.new('convert_to_html', <<-EOS)
         #-->> gsub_by(Edge.new(:input) => 'Prehtml_src') do
-        #-->> output_to Edge.new(:baz) do
+        #-->> output_to Edge.new(:output) do
         #--==   Prehtml.new(Prehtml_src).to_html(:multiline => true)
         #-->> end
         #-->> end
       EOS
 
       @connection = Apodidae::Connection.new(<<-EOS)
-        output2(:baz, 'convert_to_html') do
-          input(:output, :ul_li__conn) do
+        html(:output, 'convert_to_html') do
+          input(:html, 'ul_li__conn#1') do
             class_ "top-nav"
             __
 
@@ -200,9 +200,11 @@ describe Apodidae::Connection do
             link "/gist"
           end
         end
+
+        css(:css, 'ul_li__conn#1')
       EOS
 
-      @connection.generate(Apodidae::Edge.new(:output2), @rachis).should be_equal_ignoring_spaces(<<-EOS)
+      @connection.generate(Apodidae::Edge.new(:html), @rachis).should be_equal_ignoring_spaces(<<-EOS)
         <ul class="top-nav">
           <li class="explore">
             <a href="/explore">Explore</a>
@@ -211,6 +213,13 @@ describe Apodidae::Connection do
             <a href="/gist">Gist</a>
           </li>
         </ul>
+      EOS
+
+      @connection.generate(Apodidae::Edge.new(:css), @rachis).should be_equal_ignoring_spaces(<<-EOS)
+        PARENT_CELECTOR ul li{
+          display: block;
+          float: left;
+        }
       EOS
     end
   end

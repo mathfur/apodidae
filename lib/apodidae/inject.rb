@@ -8,6 +8,8 @@ module Apodidae
       @@cache = {}
     end
 
+    # barb_or_rachis :: e.g. "foo"
+    # branch         :: e.g. "foo#15"
     def initialize(barb_or_rachis=nil, branch=nil, injects=[])
       injects.each do |e1, e2, inject|
         raise "edge_in `#{e1.inspect} must be Edge" unless e1.kind_of?(Edge)
