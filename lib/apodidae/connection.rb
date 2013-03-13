@@ -37,7 +37,7 @@ module Apodidae
 
         if (barb_name || '')[/^([a-zA-Z0-9_]+)__conn$/]
           name = $1
-          sandbox = eval("SandboxFor_#$1").new
+          sandbox = eval("SandboxFor#{$1.camelize}").new
           sandbox.instance_eval(&block)
           @injects << [Edge.new(label_in), Edge.new(label_out), sandbox]
         else
@@ -54,7 +54,7 @@ module Apodidae
       end
     end
 
-    class SandboxFor_ul_li
+    class SandboxForUlLi
       def initialize(indent=0)
         @indent = ' '*indent
         @ul_attrs = {}
@@ -83,7 +83,7 @@ module Apodidae
         end
       end
 
-      def generate(*args)
+      def generate(wanted_edge, *args)
         # @li_attrs like [{'label' => '', 'link' => ''}, {'label' => ..}]
 
         ul_attr_str = Helper.attr_to_str(@ul_attrs, comma: true)
